@@ -1,0 +1,6 @@
+A hard fork of mlkem-native[0] for reference and implementation for 9front.
+Primary goals are to trim the wheat from the chaff to get something that is easy to reference/integrate.
+
+I am not a cryptographer, tread lightly.
+
+[0] https://github.com/pq-code-package/mlkem-native
