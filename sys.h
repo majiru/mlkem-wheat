@@ -5,97 +5,6 @@
 #ifndef MLK_SYS_H
 #define MLK_SYS_H
 
-#if !defined(MLK_CONFIG_NO_ASM) && (defined(__GNUC__) || defined(__clang__))
-#define MLK_HAVE_INLINE_ASM
-#endif
-
-/* Try to find endianness, if not forced through CFLAGS already */
-#if !defined(MLK_SYS_LITTLE_ENDIAN) && !defined(MLK_SYS_BIG_ENDIAN)
-#if defined(__BYTE_ORDER__)
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define MLK_SYS_LITTLE_ENDIAN
-#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define MLK_SYS_BIG_ENDIAN
-#else
-#error "__BYTE_ORDER__ defined, but don't recognize value."
-#endif
-#endif /* __BYTE_ORDER__ */
-
-/* MSVC does not define __BYTE_ORDER__. However, MSVC only supports
- * little endian x86, x86_64, and AArch64. It is, hence, safe to assume
- * little endian. */
-#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || \
-                          defined(_M_IX86) || defined(_M_ARM64))
-#define MLK_SYS_LITTLE_ENDIAN
-#endif
-
-#endif /* !MLK_SYS_LITTLE_ENDIAN && !MLK_SYS_BIG_ENDIAN */
-
-/* Check if we're running on an AArch64 little endian system. _M_ARM64 is set by
- * MSVC. */
-#if defined(__AARCH64EL__) || defined(_M_ARM64)
-#define MLK_SYS_AARCH64
-#endif
-
-/* Check if we're running on an AArch64 big endian system. */
-#if defined(__AARCH64EB__)
-#define MLK_SYS_AARCH64_EB
-#endif
-
-/* Check if we're running on an Armv8.1-M system with MVE */
-#if defined(__ARM_ARCH_8_1M_MAIN__) || defined(__ARM_FEATURE_MVE)
-#define MLK_SYS_ARMV81M_MVE
-#endif
-
-#if defined(__x86_64__)
-#define MLK_SYS_X86_64
-#if defined(__AVX2__)
-#define MLK_SYS_X86_64_AVX2
-#endif
-#endif /* __x86_64__ */
-
-#if defined(MLK_SYS_LITTLE_ENDIAN) && defined(__powerpc64__)
-#define MLK_SYS_PPC64LE
-#endif
-
-#if defined(__riscv) && defined(__riscv_xlen) && __riscv_xlen == 64
-#define MLK_SYS_RISCV64
-#endif
-
-#if defined(MLK_SYS_RISCV64) && defined(__riscv_vector) && \
-    defined(__riscv_v_intrinsic)
-#define MLK_SYS_RISCV64_RVV
-#endif
-
-#if defined(__riscv) && defined(__riscv_xlen) && __riscv_xlen == 32
-#define MLK_SYS_RISCV32
-#endif
-
-#if defined(MLK_FORCE_AARCH64) && !defined(MLK_SYS_AARCH64)
-#error "MLK_FORCE_AARCH64 is set, but we don't seem to be on an AArch64 system."
-#endif
-
-#if defined(MLK_FORCE_AARCH64_EB) && !defined(MLK_SYS_AARCH64_EB)
-#error \
-    "MLK_FORCE_AARCH64_EB is set, but we don't seem to be on an AArch64 system."
-#endif
-
-#if defined(MLK_FORCE_X86_64) && !defined(MLK_SYS_X86_64)
-#error "MLK_FORCE_X86_64 is set, but we don't seem to be on an X86_64 system."
-#endif
-
-#if defined(MLK_FORCE_PPC64LE) && !defined(MLK_SYS_PPC64LE)
-#error "MLK_FORCE_PPC64LE is set, but we don't seem to be on a PPC64LE system."
-#endif
-
-#if defined(MLK_FORCE_RISCV64) && !defined(MLK_SYS_RISCV64)
-#error "MLK_FORCE_RISCV64 is set, but we don't seem to be on a RISCV64 system."
-#endif
-
-#if defined(MLK_FORCE_RISCV32) && !defined(MLK_SYS_RISCV32)
-#error "MLK_FORCE_RISCV32 is set, but we don't seem to be on a RISCV32 system."
-#endif
-
 #define MLK_INLINE
 #define MLK_ALWAYS_INLINE MLK_INLINE
 
@@ -108,13 +17,7 @@
 #define MLK_DEFAULT_ALIGN 32
 #define MLK_ALIGN_UP(N) \
   ((((N) + (MLK_DEFAULT_ALIGN - 1)) / MLK_DEFAULT_ALIGN) * MLK_DEFAULT_ALIGN)
-#if defined(__GNUC__)
-#define MLK_ALIGN __attribute__((aligned(MLK_DEFAULT_ALIGN)))
-#elif defined(_MSC_VER)
-#define MLK_ALIGN __declspec(align(MLK_DEFAULT_ALIGN))
-#else
 #define MLK_ALIGN /* No known support for alignment constraints */
-#endif
 
 
 /* New X86_64 CPUs support Conflow-flow protection using the CET instructions.
@@ -144,32 +47,5 @@
   } while (0)
 
 #define MLK_MUST_CHECK_RETURN_VALUE
-
-#if !defined(__ASSEMBLER__)
-/* System capability enumeration */
-typedef enum
-{
-  /* x86_64 */
-  MLK_SYS_CAP_AVX2,
-  /* AArch64 */
-  MLK_SYS_CAP_SHA3
-} mlk_sys_cap;
-
-#if !defined(MLK_CONFIG_CUSTOM_CAPABILITY_FUNC)
-
-MLK_MUST_CHECK_RETURN_VALUE
-static MLK_INLINE int mlk_sys_check_capability(mlk_sys_cap cap)
-{
-  /* By default, we rely on compile-time feature detection/specification:
-   * If a feature is enabled at compile-time, we assume it is supported by
-   * the host that the resulting library/binary will be built on.
-   * If this assumption is not true, you MUST overwrite this function.
-   * See the documentation of MLK_CONFIG_CUSTOM_CAPABILITY_FUNC in
-   * mlkem_native_config.h for more information. */
-  USED(cap);
-  return 1;
-}
-#endif /* !MLK_CONFIG_CUSTOM_CAPABILITY_FUNC */
-#endif /* !__ASSEMBLER__ */
 
 #endif /* !MLK_SYS_H */

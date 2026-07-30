@@ -21,7 +21,6 @@
 #define MLK_KEM_H
 
 #include "common.h"
-#include "sys.h"
 
 #if defined(MLK_CHECK_APIS)
 /* Include to ensure consistency between internal kem.h

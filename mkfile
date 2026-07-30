@@ -1,7 +1,7 @@
 </$objtype/mkfile
 
 LIB=mlkem.$objtype.a
-CFLAGS=-Fpw -D__plan9__ -D__${objtype}__ -DMLK_FORCE_X86_64 -D__x86_64__ -DMLK_CONFIG_SERIAL_FIPS202_ONLY
+CFLAGS=-Fpw
 
 BASEFILES=\
 	compress.$O\

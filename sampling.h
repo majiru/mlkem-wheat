@@ -50,41 +50,6 @@ MLK_INTERNAL_API
 void mlk_poly_cbd3(mlk_poly *r, const u8int buf[3 * MLKEM_N / 4]);
 #endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_ETA1 == 3 */
 
-#if !defined(MLK_CONFIG_SERIAL_FIPS202_ONLY)
-#define mlk_poly_rej_uniform_x4 MLK_NAMESPACE(poly_rej_uniform_x4)
-/**
- * Generate four polynomials using rejection sampling on (pseudo-)uniformly
- * random bytes sampled from a seed.
- *
- * @spec{Implements @[FIPS203, Algorithm 7, SampleNTT].}
- *
- * @param[out] vec0 Polynomial to be sampled.
- * @param[out] vec1 Polynomial to be sampled.
- * @param[out] vec2 Polynomial to be sampled.
- * @param[out] vec3 Polynomial to be sampled.
- * @param[in]  seed Consecutive array of 4 seed buffers of size
- *                  MLKEM_SYMBYTES + 2 each, plus padding for alignment.
- */
-MLK_INTERNAL_API
-void mlk_poly_rej_uniform_x4(mlk_poly *vec0, mlk_poly *vec1, mlk_poly *vec2,
-                             mlk_poly *vec3,
-                             u8int seed[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 2)])
-__contract__(
-  requires(memory_no_alias(vec0, sizeof(mlk_poly)))
-  requires(memory_no_alias(vec1, sizeof(mlk_poly)))
-  requires(memory_no_alias(vec2, sizeof(mlk_poly)))
-  requires(memory_no_alias(vec3, sizeof(mlk_poly)))
-  requires(memory_no_alias(seed, 4 * MLK_ALIGN_UP(MLKEM_SYMBYTES + 2)))
-  assigns(memory_slice(vec0, sizeof(mlk_poly)))
-  assigns(memory_slice(vec1, sizeof(mlk_poly)))
-  assigns(memory_slice(vec2, sizeof(mlk_poly)))
-  assigns(memory_slice(vec3, sizeof(mlk_poly)))
-  ensures(array_bound(vec0->coeffs, 0, MLKEM_N, 0, MLKEM_Q))
-  ensures(array_bound(vec1->coeffs, 0, MLKEM_N, 0, MLKEM_Q))
-  ensures(array_bound(vec2->coeffs, 0, MLKEM_N, 0, MLKEM_Q))
-  ensures(array_bound(vec3->coeffs, 0, MLKEM_N, 0, MLKEM_Q)));
-#endif /* !MLK_CONFIG_SERIAL_FIPS202_ONLY */
-
 #define mlk_poly_rej_uniform MLK_NAMESPACE(poly_rej_uniform)
 /**
  * Generate a polynomial using rejection sampling on (pseudo-)uniformly

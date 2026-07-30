@@ -36,29 +36,15 @@
   mlk_shake256(OUT, (ETA) * MLKEM_N / 4, IN, MLKEM_SYMBYTES + 1)
 #define mlk_prf_eta1(OUT, IN) mlk_prf_eta(MLKEM_ETA1, OUT, IN)
 #define mlk_prf_eta2(OUT, IN) mlk_prf_eta(MLKEM_ETA2, OUT, IN)
-#define mlk_prf_eta1_x4(OUT, IN)                                        \
-  mlk_shake256x4((OUT)[0], (OUT)[1], (OUT)[2], (OUT)[3],                \
-                 (MLKEM_ETA1 * MLKEM_N / 4), (IN)[0], (IN)[1], (IN)[2], \
-                 (IN)[3], MLKEM_SYMBYTES + 1)
 
 /* XOF function, FIPS 203 4.1 */
 #define mlk_xof_ctx mlk_shake128ctx
-#define mlk_xof_x4_ctx mlk_shake128x4ctx
 #define mlk_xof_init(CTX) mlk_shake128_init((CTX))
 #define mlk_xof_absorb(CTX, IN, INBYTES) \
   mlk_shake128_absorb_once((CTX), (IN), (INBYTES))
 #define mlk_xof_squeezeblocks(BUF, NBLOCKS, CTX) \
   mlk_shake128_squeezeblocks((BUF), (NBLOCKS), (CTX))
 #define mlk_xof_release(CTX) mlk_shake128_release((CTX))
-
-#define mlk_xof_x4_init(CTX) mlk_shake128x4_init((CTX))
-#define mlk_xof_x4_absorb(CTX, IN, INBYTES)                             \
-  mlk_shake128x4_absorb_once((CTX), (IN)[0], (IN)[1], (IN)[2], (IN)[3], \
-                             (INBYTES))
-#define mlk_xof_x4_squeezeblocks(BUF, NBLOCKS, CTX)                    \
-  mlk_shake128x4_squeezeblocks((BUF)[0], (BUF)[1], (BUF)[2], (BUF)[3], \
-                               (NBLOCKS), (CTX))
-#define mlk_xof_x4_release(CTX) mlk_shake128x4_release((CTX))
 
 #define MLK_XOF_RATE SHAKE128_RATE
 
