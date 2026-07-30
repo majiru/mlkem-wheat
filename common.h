@@ -67,15 +67,6 @@
 #define MLK_NAMESPACE(s) MLK_CONCAT(MLK_NAMESPACE_PREFIX, s)
 #define MLK_NAMESPACE_K(s) MLK_CONCAT(MLK_NAMESPACE_PREFIX_K, s)
 
-/* On Apple platforms, we need to emit leading underscore
- * in front of assembly symbols. We thus introducee a separate
- * namespace wrapper for ASM symbols. */
-#if !defined(__APPLE__)
-#define MLK_ASM_NAMESPACE(sym) MLK_NAMESPACE(sym)
-#else
-#define MLK_ASM_NAMESPACE(sym) MLK_CONCAT(_, MLK_NAMESPACE(sym))
-#endif
-
 /*
  * On X86_64 if control-flow protections (CET) are enabled (through
  * -fcf-protection=), we add an endbr64 instruction at every global function
@@ -93,27 +84,11 @@
 #define MLK_ASM_FN_SYMBOL(sym) MLK_ASM_NAMESPACE(sym) :
 #endif /* !MLK_SYS_X86_64 && !MLK_SYS_ARMV81M_MVE */
 
-/*
- * Output the size of an assembly function.
- */
-#if defined(__ELF__)
-#define MLK_ASM_FN_SIZE(sym) \
-  .size MLK_ASM_NAMESPACE(sym), .- MLK_ASM_NAMESPACE(sym)
-#else
-#define MLK_ASM_FN_SIZE(sym)
-#endif
-
 /* We aim to simplify the user's life by supporting builds where
  * all source files are included, even those that are not needed.
  * Those files are appropriately guarded and will be empty when unneeded.
  * The following is to avoid compilers complaining about this. */
 #define MLK_EMPTY_CU(s) extern int MLK_NAMESPACE_K(empty_cu_##s);
-
-/* MLK_CONFIG_NO_ASM takes precedence over MLK_USE_NATIVE_XXX */
-#if defined(MLK_CONFIG_NO_ASM)
-#undef MLK_CONFIG_USE_NATIVE_BACKEND_ARITH
-#undef MLK_CONFIG_USE_NATIVE_BACKEND_FIPS202
-#endif
 
 #if defined(MLK_CONFIG_USE_NATIVE_BACKEND_ARITH) && \
     !defined(MLK_CONFIG_ARITH_BACKEND_FILE)
@@ -129,45 +104,11 @@
 #error Bad configuration: MLK_CONFIG_NO_RANDOMIZED_API is incompatible with MLK_CONFIG_KEYGEN_PCT as the current PCT implementation requires crypto_kem_enc()
 #endif
 
-#if defined(MLK_CONFIG_USE_NATIVE_BACKEND_ARITH)
-#include MLK_CONFIG_ARITH_BACKEND_FILE
-/* Include to enforce consistency of API and implementation,
- * and conduct sanity checks on the backend.
- *
- * Keep this _after_ the inclusion of the backend; otherwise,
- * the sanity checks won't have an effect. */
-#if defined(MLK_CHECK_APIS) && !defined(__ASSEMBLER__)
-#include "native/api.h"
-#endif
-#endif /* MLK_CONFIG_USE_NATIVE_BACKEND_ARITH */
-
-#if defined(MLK_CONFIG_USE_NATIVE_BACKEND_FIPS202)
-#include MLK_CONFIG_FIPS202_BACKEND_FILE
-/* Include to enforce consistency of API and implementation,
- * and conduct sanity checks on the backend.
- *
- * Keep this _after_ the inclusion of the backend; otherwise,
- * the sanity checks won't have an effect. */
-#if defined(MLK_CHECK_APIS) && !defined(__ASSEMBLER__)
-#include "fips202/native/api.h"
-#endif
-#endif /* MLK_CONFIG_USE_NATIVE_BACKEND_FIPS202 */
-
-#if !defined(MLK_CONFIG_FIPS202_CUSTOM_HEADER)
 #define MLK_FIPS202_HEADER_FILE "fips202.h"
-#else
-#define MLK_FIPS202_HEADER_FILE MLK_CONFIG_FIPS202_CUSTOM_HEADER
-#endif
 
 /* Standard library function replacements */
-#if !defined(__ASSEMBLER__)
-#if !defined(MLK_CONFIG_CUSTOM_MEMCPY)
 #define mlk_memcpy memcpy
-#endif
-
-#if !defined(MLK_CONFIG_CUSTOM_MEMSET)
 #define mlk_memset memset
-#endif
 
 
 /* Allocation macros for large local structures
@@ -215,7 +156,6 @@
 #error MLK_CONFIG_CONTEXT_PARAMETER_TYPE must be defined if and only if MLK_CONFIG_CONTEXT_PARAMETER is defined
 #endif
 
-#if !defined(MLK_CONFIG_CUSTOM_ALLOC_FREE)
 /* Default: stack allocation */
 
 #define MLK_ALLOC(v, T, N, context) \
@@ -234,31 +174,6 @@
     USED((v));                                         \
   } while (0)
 
-#else /* !MLK_CONFIG_CUSTOM_ALLOC_FREE */
-
-/* Custom allocation */
-
-/*
- * The indirection here is necessary to use MLK_CONTEXT_PARAMETERS_3 here.
- */
-#define MLK_APPLY(f, args) f args
-
-#define MLK_ALLOC(v, T, N, context) \
-  MLK_APPLY(MLK_CUSTOM_ALLOC, MLK_CONTEXT_PARAMETERS_3(v, T, N, context))
-
-#define MLK_FREE(v, T, N, context)                                            \
-  do                                                                          \
-  {                                                                           \
-    if (v != NULL)                                                            \
-    {                                                                         \
-      mlk_zeroize(v, sizeof(T) * (N));                                        \
-      MLK_APPLY(MLK_CUSTOM_FREE, MLK_CONTEXT_PARAMETERS_3(v, T, N, context)); \
-      v = NULL;                                                               \
-    }                                                                         \
-  } while (0)
-
-#endif /* MLK_CONFIG_CUSTOM_ALLOC_FREE */
-
 /****************************** Error codes ***********************************/
 
 /* Generic failure condition */
@@ -269,7 +184,5 @@
 /* An rng failure occured. Might be due to insufficient entropy or
  * system misconfiguration. */
 #define MLK_ERR_RNG_FAIL -3
-
-#endif /* !__ASSEMBLER__ */
 
 #endif /* !MLK_COMMON_H */
