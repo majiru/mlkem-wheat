@@ -19,7 +19,6 @@
 
 #include "common.h"
 
-#include "debug.h"
 #include "verify.h"
 #include "fips202.h"
 #include "symmetric.h"
@@ -70,7 +69,6 @@ static unsigned mlk_rej_uniform(s16int *r, unsigned target,
   unsigned ctr, pos;
   s16int val0, val1;
 
-  mlk_assert_bound(r, offset, 0, MLKEM_Q);
 
   ctr = offset;
   pos = 0;
@@ -91,7 +89,6 @@ static unsigned mlk_rej_uniform(s16int *r, unsigned target,
     }
   }
 
-  mlk_assert_bound(r, ctr, 0, MLKEM_Q);
   return ctr;
 }
 

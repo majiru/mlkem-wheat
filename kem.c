@@ -25,7 +25,6 @@
 
 #include "common.h"
 #include "verify.h"
-#include "debug.h"
 #include "randombytes.h"
 #include "fips202.h"
 #include "symmetric.h"

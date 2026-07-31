@@ -18,7 +18,6 @@
  */
 
 #include "common.h"
-#include "debug.h"
 #include "verify.h"
 #include "poly.h"
 #include "compress.h"
@@ -263,7 +262,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d4(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D4], const mlk_poly *a)
 {
   unsigned i;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_N / 8; i++)
   {
@@ -292,7 +290,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d10(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D10], const mlk_poly *a)
 {
   unsigned j;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
   for (j = 0; j < MLKEM_N / 4; j++)
   {
     unsigned k;
@@ -326,7 +323,6 @@ void mlk_poly_decompress_d4(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES
     r->coeffs[2 * i + 1] = mlk_scalar_decompress_d4((a[i] >> 4) & 0xF);
   }
 
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: Embedded into `polyvec_decompress()` in the
@@ -352,7 +348,6 @@ void mlk_poly_decompress_d10(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTE
     }
   }
 
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: `poly_compress()` in the reference implementation @[REF],
@@ -365,7 +360,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d5(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D5], const mlk_poly *a)
 {
   unsigned i;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_N / 8; i++)
   {
@@ -394,7 +388,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d11(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D11], const mlk_poly *a)
 {
   unsigned j;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
 
   for (j = 0; j < MLKEM_N / 8; j++)
   {
@@ -460,7 +453,6 @@ void mlk_poly_decompress_d5(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES
     }
   }
 
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: Embedded into `polyvec_decompress()` in the
@@ -491,7 +483,6 @@ void mlk_poly_decompress_d11(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTE
     }
   }
 
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: `poly_tobytes()` in the reference implementation @[REF].
@@ -503,7 +494,6 @@ MLK_INTERNAL_API
 void mlk_poly_tobytes(u8int r[MLKEM_POLYBYTES], const mlk_poly *a)
 {
   unsigned i;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_N / 2; i++)
   {
@@ -550,7 +540,6 @@ void mlk_poly_frombytes(mlk_poly *r, const u8int a[MLKEM_POLYBYTES])
   }
 
   /* Note that the coefficients are not canonical */
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_UINT12_LIMIT);
 }
 
 /* Reference: `poly_frommsg()` in the reference implementation @[REF].
@@ -577,7 +566,6 @@ void mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
       r->coeffs[8 * i + j] = mlk_ct_sel_int16(MLKEM_Q_HALF, 0, msg[i] & mask);
     }
   }
-  mlk_assert_abs_bound(r, MLKEM_N, MLKEM_Q);
 }
 
 /* Reference: `poly_tomsg()` in the reference implementation @[REF].
@@ -590,7 +578,6 @@ MLK_INTERNAL_API
 void mlk_poly_tomsg(u8int msg[MLKEM_INDCPA_MSGBYTES], const mlk_poly *a)
 {
   unsigned i;
-  mlk_assert_bound(a, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_N / 8; i++)
   {

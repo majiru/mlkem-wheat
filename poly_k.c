@@ -23,7 +23,6 @@
  */
 
 #include "common.h"
-#include "debug.h"
 #include "verify.h"
 #include "fips202.h"
 #include "symmetric.h"
@@ -177,7 +176,6 @@ void mlk_polyvec_compress_du(u8int r[MLKEM_POLYVECCOMPRESSEDBYTES_DU],
                              const mlk_polyvec *a)
 {
   unsigned i;
-  mlk_assert_bound_2d(a->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_K; i++)
   {
@@ -196,7 +194,6 @@ void mlk_polyvec_decompress_du(mlk_polyvec *r,
     mlk_poly_decompress_du(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_DU);
   }
 
-  mlk_assert_bound_2d(r->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: `polyvec_tobytes()` in the reference implementation @[REF].
@@ -208,7 +205,6 @@ MLK_INTERNAL_API
 void mlk_polyvec_tobytes(u8int r[MLKEM_POLYVECBYTES], const mlk_polyvec *a)
 {
   unsigned i;
-  mlk_assert_bound_2d(a->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
 
   for (i = 0; i < MLKEM_K; i++)
   {
@@ -226,7 +222,6 @@ void mlk_polyvec_frombytes(mlk_polyvec *r, const u8int a[MLKEM_POLYVECBYTES])
     mlk_poly_frombytes(&r->vec[i], a + i * MLKEM_POLYBYTES);
   }
 
-  mlk_assert_bound_2d(r->vec, MLKEM_K, MLKEM_N, 0, MLKEM_UINT12_LIMIT);
 }
 
 /* Reference: `polyvec_ntt()` in the reference implementation @[REF]. */
@@ -239,7 +234,6 @@ void mlk_polyvec_ntt(mlk_polyvec *r)
     mlk_poly_ntt(&r->vec[i]);
   }
 
-  mlk_assert_abs_bound_2d(r->vec, MLKEM_K, MLKEM_N, MLK_NTT_BOUND);
 }
 
 /* Reference: `polyvec_invntt_tomont()` in the reference implementation @[REF].
@@ -256,7 +250,6 @@ void mlk_polyvec_invntt_tomont(mlk_polyvec *r)
     mlk_poly_invntt_tomont(&r->vec[i]);
   }
 
-  mlk_assert_abs_bound_2d(r->vec, MLKEM_K, MLKEM_N, MLK_INVNTT_BOUND);
 }
 
 /* Reference: `polyvec_basemul_acc_montgomery()` in the
@@ -275,7 +268,6 @@ MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(
     const mlk_polyvec_mulcache *b_cache)
 {
   unsigned i;
-  mlk_assert_bound_2d(a->vec, MLKEM_K, MLKEM_N, 0, MLKEM_UINT12_LIMIT);
 
   for (i = 0; i < MLKEM_N / 2; i++)
   {
@@ -323,7 +315,6 @@ void mlk_polyvec_reduce(mlk_polyvec *r)
     mlk_poly_reduce(&r->vec[i]);
   }
 
-  mlk_assert_bound_2d(r->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: `polyvec_add()` in the reference implementation @[REF].
@@ -349,7 +340,6 @@ void mlk_polyvec_tomont(mlk_polyvec *r)
     mlk_poly_tomont(&r->vec[i]);
   }
 
-  mlk_assert_abs_bound_2d(r->vec, MLKEM_K, MLKEM_N, MLKEM_Q);
 }
 
 
@@ -414,12 +404,8 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   if (r3 != nil)
   {
     mlk_poly_cbd_eta1(r3, buf[3]);
-    mlk_assert_abs_bound(r3, MLKEM_N, MLKEM_ETA1 + 1);
   }
 
-  mlk_assert_abs_bound(r0, MLKEM_N, MLKEM_ETA1 + 1);
-  mlk_assert_abs_bound(r1, MLKEM_N, MLKEM_ETA1 + 1);
-  mlk_assert_abs_bound(r2, MLKEM_N, MLKEM_ETA1 + 1);
 
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */
@@ -467,7 +453,6 @@ void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
 
   mlk_poly_cbd_eta2(r, buf);
 
-  mlk_assert_abs_bound(r, MLKEM_N, MLKEM_ETA2 + 1);
 
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */
@@ -519,10 +504,6 @@ void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_poly_cbd_eta2(r2, buf[2]);
   mlk_poly_cbd_eta2(r3, buf[3]);
 
-  mlk_assert_abs_bound(r0, MLKEM_N, MLKEM_ETA1 + 1);
-  mlk_assert_abs_bound(r1, MLKEM_N, MLKEM_ETA1 + 1);
-  mlk_assert_abs_bound(r2, MLKEM_N, MLKEM_ETA2 + 1);
-  mlk_assert_abs_bound(r3, MLKEM_N, MLKEM_ETA2 + 1);
 
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */

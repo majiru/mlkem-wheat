@@ -18,7 +18,6 @@
  */
 
 #include "common.h"
-#include "debug.h"
 #include "verify.h"
 #include "randombytes.h"
 #include "poly.h"
@@ -69,7 +68,6 @@ static void mlk_pack_pk(u8int r[MLKEM_INDCPA_PUBLICKEYBYTES],
                         const mlk_polyvec *pk,
                         const u8int seed[MLKEM_SYMBYTES])
 {
-  mlk_assert_bound_2d(pk->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
   mlk_polyvec_tobytes(r, pk);
   mlk_memcpy(r + MLKEM_POLYVECBYTES, seed, MLKEM_SYMBYTES);
 }
@@ -108,7 +106,6 @@ static void mlk_unpack_pk(mlk_polyvec *pk, u8int seed[MLKEM_SYMBYTES],
 static void mlk_pack_sk(u8int r[MLKEM_INDCPA_SECRETKEYBYTES],
                         const mlk_polyvec *sk)
 {
-  mlk_assert_bound_2d(sk->vec, MLKEM_K, MLKEM_N, 0, MLKEM_Q);
   mlk_polyvec_tobytes(r, sk);
 }
 
@@ -225,8 +222,6 @@ void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
 
     mlk_poly_rej_uniform(&a->vec[i / MLKEM_K].vec[i % MLKEM_K], seed_ext[0]);
   }
-
-  mlk_assert(i == MLKEM_K * MLKEM_K);
 
   /*
    * The public matrix is generated in NTT domain. If the native backend

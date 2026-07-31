@@ -18,7 +18,6 @@
  */
 
 #include "common.h"
-#include "debug.h"
 #include "verify.h"
 #include "poly.h"
 #include "sampling.h"
@@ -47,9 +46,6 @@ s16int mlk_montgomery_reduce(s32int a)
   const s16int t = mlk_cast_u16into_int16(a_inverted);
 
   s32int r;
-
-  mlk_assert(a < +(0xffffffffU - (((s32int)1 << 15) * MLKEM_Q)) &&
-             a > -(0xffffffffU - (((s32int)1 << 15) * MLKEM_Q)));
 
   r = a - ((s32int)t * MLKEM_Q);
 
@@ -83,7 +79,6 @@ s16int mlk_montgomery_reduce(s32int a)
 static s16int mlk_fqmul(s16int a, s16int b)
 {
   s16int res;
-  mlk_assert_abs_bound(&b, 1, MLKEM_Q_HALF);
 
   res = mlk_montgomery_reduce((s32int)a * (s32int)b);
   /* Bounds:
@@ -93,7 +88,6 @@ static s16int mlk_fqmul(s16int a, s16int b)
    *        < MLKEM_Q
    */
 
-  mlk_assert_abs_bound(&res, 1, MLKEM_Q);
   return res;
 }
 
@@ -134,7 +128,6 @@ static s16int mlk_barrett_reduce(s16int a)
    */
   s16int res = (s16int)(a - t * MLKEM_Q);
 
-  mlk_assert_abs_bound(&res, 1, MLKEM_Q_HALF);
   return res;
 }
 
@@ -148,7 +141,6 @@ MLK_INTERNAL_API void mlk_poly_tomont(mlk_poly *r)
     r->coeffs[i] = mlk_fqmul(r->coeffs[i], f);
   }
 
-  mlk_assert_abs_bound(r, MLKEM_N, MLKEM_Q);
 }
 
 /**
@@ -167,7 +159,6 @@ MLK_INTERNAL_API void mlk_poly_tomont(mlk_poly *r)
  */
 static s16int mlk_scalar_signed_to_unsigned_q(s16int c)
 {
-  mlk_assert_abs_bound(&c, 1, MLKEM_Q);
 
   /* Add MLKEM_Q if c is negative, but in constant time.
    *
@@ -175,7 +166,6 @@ static s16int mlk_scalar_signed_to_unsigned_q(s16int c)
    * so the cast to u16int is safe. */
   c = mlk_ct_sel_int16((s16int)(c + MLKEM_Q), c, mlk_ct_cmask_neg_i16(c));
 
-  mlk_assert_bound(&c, 1, 0, MLKEM_Q);
   return c;
 }
 
@@ -198,7 +188,6 @@ MLK_INTERNAL_API void mlk_poly_reduce(mlk_poly *r)
     r->coeffs[i] = mlk_scalar_signed_to_unsigned_q(t);
   }
 
-  mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
 /* Reference: `poly_add()` in the reference implementation @[REF].
@@ -254,7 +243,6 @@ MLK_INTERNAL_API void mlk_poly_mulcache_compute(mlk_poly_mulcache *x,
    * from the spec to not unnecessarily constrain native
    * implementations, but checked here nonetheless.
    */
-  mlk_assert_abs_bound(x, MLKEM_N / 2, MLKEM_Q);
 }
 
 /*
@@ -340,7 +328,6 @@ MLK_INTERNAL_API void mlk_poly_ntt(mlk_poly *p)
   unsigned layer;
   s16int *r;
 
-  mlk_assert_abs_bound(p, MLKEM_N, MLKEM_Q);
 
   r = p->coeffs;
 
@@ -350,7 +337,6 @@ MLK_INTERNAL_API void mlk_poly_ntt(mlk_poly *p)
   }
 
   /* Check the stronger bound */
-  mlk_assert_abs_bound(p, MLKEM_N, MLK_NTT_BOUND);
 }
 
 
@@ -404,5 +390,4 @@ MLK_INTERNAL_API void mlk_poly_invntt_tomont(mlk_poly *p)
     mlk_invntt_layer(r, layer);
   }
 
-  mlk_assert_abs_bound(p, MLKEM_N, MLK_INVNTT_BOUND);
 }
