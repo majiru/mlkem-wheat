@@ -169,7 +169,7 @@ void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
                     int transposed)
 {
   unsigned i, j;
-  MLK_ALIGN u8int seed_ext[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 2)];
+  u8int seed_ext[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 2)];
 
   for (j = 0; j < 4; j++)
   {

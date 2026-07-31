@@ -25,7 +25,7 @@
 typedef struct
 {
   s16int coeffs[MLKEM_N]; /**< Polynomial coefficients. */
-} MLK_ALIGN mlk_poly;
+} mlk_poly;
 
 /**
  * INTERNAL representation of precomputed data speeding up
@@ -34,7 +34,7 @@ typedef struct
 typedef struct
 {
   s16int coeffs[MLKEM_N >> 1]; /**< Cached coefficients. */
-} MLK_ALIGN mlk_poly_mulcache;
+} mlk_poly_mulcache;
 
 /**
  * Generic Montgomery reduction; given a 32-bit integer a, computes a 16-bit

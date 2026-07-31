@@ -14,7 +14,6 @@
 #define MLK_DEFAULT_ALIGN 32
 #define MLK_ALIGN_UP(N) \
   ((((N) + (MLK_DEFAULT_ALIGN - 1)) / MLK_DEFAULT_ALIGN) * MLK_DEFAULT_ALIGN)
-#define MLK_ALIGN /* No known support for alignment constraints */
 
 #define MLKEM_N 256
 #define MLKEM_Q 3329
@@ -76,7 +75,7 @@
 /* Default: stack allocation */
 
 #define MLK_ALLOC(v, T, N, context) \
-  MLK_ALIGN T mlk_alloc_##v[N];     \
+  T mlk_alloc_##v[N];     \
   T *v = mlk_alloc_##v
 
 #define MLK_FREE(v, T, N, context)                     \

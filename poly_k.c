@@ -369,8 +369,8 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3)
 {
-  MLK_ALIGN u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
-  MLK_ALIGN u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
+  u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
+  u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
   mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
   mlk_memcpy(extkey[1], seed, MLKEM_SYMBYTES);
   mlk_memcpy(extkey[2], seed, MLKEM_SYMBYTES);
@@ -438,8 +438,8 @@ MLK_INTERNAL_API
 void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
                             u8int nonce)
 {
-  MLK_ALIGN u8int buf[MLKEM_ETA2 * MLKEM_N / 4];
-  MLK_ALIGN u8int extkey[MLKEM_SYMBYTES + 1];
+  u8int buf[MLKEM_ETA2 * MLKEM_N / 4];
+  u8int extkey[MLKEM_SYMBYTES + 1];
 
   mlk_memcpy(extkey, seed, MLKEM_SYMBYTES);
   extkey[MLKEM_SYMBYTES] = nonce;
@@ -474,8 +474,8 @@ void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
 #if MLKEM_ETA2 >= MLKEM_ETA1
 #error mlk_poly_getnoise_eta1122_4x assumes MLKEM_ETA1 > MLKEM_ETA2
 #endif
-  MLK_ALIGN u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
-  MLK_ALIGN u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
+  u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
+  u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
 
   mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
   mlk_memcpy(extkey[1], seed, MLKEM_SYMBYTES);

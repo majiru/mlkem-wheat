@@ -13,7 +13,7 @@ typedef struct
 {
   DigestState d;
   XOFState x;
-} MLK_ALIGN mlk_shake128ctx;
+} mlk_shake128ctx;
 
 /**
  * One-shot absorb step of the SHAKE128 XOF.

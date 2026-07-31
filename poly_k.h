@@ -25,19 +25,19 @@
 typedef struct
 {
   mlk_poly vec[MLKEM_K]; /**< Component polynomials. */
-} MLK_ALIGN mlk_polyvec;
+} mlk_polyvec;
 
 /** MLKEM_K x MLKEM_K matrix of polynomials. */
 typedef struct
 {
   mlk_polyvec vec[MLKEM_K]; /**< Rows of the matrix. */
-} MLK_ALIGN mlk_polymat;
+} mlk_polymat;
 
 /** Vector of MLKEM_K mlk_poly_mulcache entries. */
 typedef struct
 {
   mlk_poly_mulcache vec[MLKEM_K]; /**< Per-component caches. */
-} MLK_ALIGN mlk_polyvec_mulcache;
+} mlk_polyvec_mulcache;
 
 #define mlk_poly_compress_du MLK_NAMESPACE_K(poly_compress_du)
 void mlk_poly_compress_du(u8int r[MLKEM_POLYCOMPRESSEDBYTES_DU], const mlk_poly *a);

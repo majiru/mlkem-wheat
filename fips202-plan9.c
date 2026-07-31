@@ -1,4 +1,7 @@
-#include "common.h"
+#include <u.h>
+#include <libc.h>
+#include <mp.h>
+#include <libsec.h>
 #include "fips202.h"
 
 void

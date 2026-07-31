@@ -105,7 +105,7 @@ MLK_INTERNAL_API
 void mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 {
   mlk_xof_ctx state;
-  MLK_ALIGN u8int buf[MLKEM_GEN_MATRIX_NBLOCKS * MLK_XOF_RATE];
+  u8int buf[MLKEM_GEN_MATRIX_NBLOCKS * MLK_XOF_RATE];
   unsigned ctr, buflen;
 
   mlk_xof_init(&state);
