@@ -86,7 +86,7 @@ static void surf(void)
   }
 }
 
-int randombytes(u8int *buf, ulong n)
+int mlk_randombytes(u8int *buf, ulong n)
 {
   while (n > 0)
   {

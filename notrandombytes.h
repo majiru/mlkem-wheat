@@ -14,9 +14,6 @@
 
 /* Based on @[surf]. */
 
-#ifndef NOTRANDOMBYTES_H
-#define NOTRANDOMBYTES_H
-
 /**
  * WARNING
  *
@@ -26,6 +23,4 @@
  */
 
 void randombytes_reset(void);
-int randombytes(u8int *buf, ulong n);
-
-#endif /* !NOTRANDOMBYTES_H */
+int mlk_randombytes(u8int *buf, ulong n);
