@@ -4,7 +4,10 @@
  */
 #include <u.h>
 #include <libc.h>
-#include "verify.h"
+#include <mp.h>
+#include <libsec.h>
+
+#include "a.h"
 
 /*
  * Masking value used in constant-time functions from

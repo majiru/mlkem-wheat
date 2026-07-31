@@ -17,10 +17,12 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "common.h"
-#include "verify.h"
-#include "poly.h"
-#include "compress.h"
+#include <u.h>
+#include <libc.h>
+#include <mp.h>
+#include <libsec.h>
+
+#include "a.h"
 
 /**
  * Compute round(u * 2 / MLKEM_Q).

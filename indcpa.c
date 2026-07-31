@@ -17,17 +17,13 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "common.h"
-#include "verify.h"
-#include "randombytes.h"
-#include "poly.h"
-#include "sampling.h"
+#include <u.h>
+#include <libc.h>
+#include <mp.h>
+#include <libsec.h>
+
+#include "a.h"
 #include "fips202.h"
-#include "symmetric.h"
-#include "compress.h"
-#include "poly_k.h"
-#include "indcpa.h"
-#include "ns.h"
 #include "params.h"
 
 #define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)

@@ -17,13 +17,13 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "common.h"
+#include <u.h>
+#include <libc.h>
+#include <mp.h>
+#include <libsec.h>
 
-#include "verify.h"
+#include "a.h"
 #include "fips202.h"
-#include "symmetric.h"
-#include "poly.h"
-#include "sampling.h"
 
 /**
  * Run rejection sampling on uniform random bytes to generate uniform random
