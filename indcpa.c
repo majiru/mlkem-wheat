@@ -44,7 +44,6 @@
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 #define mlk_poly_getnoise_eta1122_4x MLK_NAMESPACE_K(poly_getnoise_eta1122_4x)
 
-#define mlk_gen_matrix MLK_NAMESPACE_K(gen_matrix)
 #define mlk_indcpa_keypair_derand MLK_NAMESPACE_K(indcpa_keypair_derand)
 #define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
 #define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec)
@@ -179,8 +178,8 @@ static void mlk_polymat_permute_bitrev_to_custom(mlk_polymat *a)
  *              implementations. The reference implementation generates
  *              one matrix entry a time.
  *
- * Not static for benchmarking */
-MLK_INTERNAL_API
+ */
+static
 void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
                     int transposed)
 {

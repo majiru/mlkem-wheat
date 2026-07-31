@@ -40,13 +40,9 @@
 #define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
 #define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec)
 
-#define mlk_kem_keypair_derand MLK_NAMESPACE_K(keypair_derand)
 #define mlk_kem_keypair MLK_NAMESPACE_K(keypair)
-#define mlk_kem_enc_derand MLK_NAMESPACE_K(enc_derand)
 #define mlk_kem_enc MLK_NAMESPACE_K(enc)
 #define mlk_kem_dec MLK_NAMESPACE_K(dec)
-#define mlk_kem_check_pk MLK_NAMESPACE_K(check_pk)
-#define mlk_kem_check_sk MLK_NAMESPACE_K(check_sk)
 
 /* Parameter set namespacing
  * This is to facilitate building multiple instances
@@ -56,7 +52,7 @@
 /* End of parameter set namespacing */
 
 /* Reference: Not implemented in the reference implementation @[REF]. */
-MLK_EXTERNAL_API
+static
 int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
 {
   int ret;
@@ -87,7 +83,7 @@ cleanup:
 
 
 /* Reference: Not implemented in the reference implementation @[REF]. */
-MLK_EXTERNAL_API
+static
 int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
 {
   int ret;
@@ -195,7 +191,7 @@ static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  *            @[REF].
  *            - We optionally include PCT which is not present in
  *              the reference code. */
-MLK_EXTERNAL_API
+static
 int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                            u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
                            const u8int coins[2 * MLKEM_SYMBYTES])
@@ -264,7 +260,7 @@ cleanup:
 /* Reference: `crypto_kem_enc_derand()` in the reference implementation @[REF]
  *            - We include public key check
  *            - We include stack buffer zeroization */
-MLK_EXTERNAL_API
+static
 int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                        u8int ss[MLKEM_SSBYTES],
                        const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],

@@ -48,20 +48,9 @@
  * system misconfiguration. */
 #define MLK_ERR_RNG_FAIL -3
 
-int mlkem512_keypair_derand(
-    u8int pk[MLKEM512_PUBLICKEYBYTES],
-    u8int sk[MLKEM512_SECRETKEYBYTES],
-    const u8int coins[2 * MLKEM_SYMBYTES]
-);
 int mlkem512_keypair(
     u8int pk[MLKEM512_PUBLICKEYBYTES],
     u8int sk[MLKEM512_SECRETKEYBYTES]
-);
-int mlkem512_enc_derand(
-    u8int ct[MLKEM512_CIPHERTEXTBYTES],
-    u8int ss[MLKEM_BYTES],
-    const u8int pk[MLKEM512_PUBLICKEYBYTES],
-    const u8int coins[MLKEM_SYMBYTES]
 );
 int mlkem512_enc(
     u8int ct[MLKEM512_CIPHERTEXTBYTES],
@@ -73,26 +62,9 @@ int mlkem512_dec(
     const u8int ct[MLKEM512_CIPHERTEXTBYTES],
     const u8int sk[MLKEM512_SECRETKEYBYTES]
 );
-int mlkem512_check_pk(
-    const u8int pk[MLKEM512_PUBLICKEYBYTES]
-);
-int mlkem512_check_sk(
-    const u8int sk[MLKEM512_SECRETKEYBYTES]
-);
-int mlkem768_keypair_derand(
-    u8int pk[MLKEM768_PUBLICKEYBYTES],
-    u8int sk[MLKEM768_SECRETKEYBYTES],
-    const u8int coins[2 * MLKEM_SYMBYTES]
-);
 int mlkem768_keypair(
     u8int pk[MLKEM768_PUBLICKEYBYTES],
     u8int sk[MLKEM768_SECRETKEYBYTES]
-);
-int mlkem768_enc_derand(
-    u8int ct[MLKEM768_CIPHERTEXTBYTES],
-    u8int ss[MLKEM_BYTES],
-    const u8int pk[MLKEM768_PUBLICKEYBYTES],
-    const u8int coins[MLKEM_SYMBYTES]
 );
 int mlkem768_enc(
     u8int ct[MLKEM768_CIPHERTEXTBYTES],
@@ -104,12 +76,6 @@ int mlkem768_dec(
     const u8int ct[MLKEM768_CIPHERTEXTBYTES],
     const u8int sk[MLKEM768_SECRETKEYBYTES]
 );
-int mlkem768_check_pk(
-    const u8int pk[MLKEM768_PUBLICKEYBYTES]
-);
-int mlkem768_check_sk(
-    const u8int sk[MLKEM768_SECRETKEYBYTES]
-);
 int mlkem1024_keypair_derand(
     u8int pk[MLKEM1024_PUBLICKEYBYTES],
     u8int sk[MLKEM1024_SECRETKEYBYTES],
@@ -119,12 +85,6 @@ int mlkem1024_keypair(
     u8int pk[MLKEM1024_PUBLICKEYBYTES],
     u8int sk[MLKEM1024_SECRETKEYBYTES]
 );
-int mlkem1024_enc_derand(
-    u8int ct[MLKEM1024_CIPHERTEXTBYTES],
-    u8int ss[MLKEM_BYTES],
-    const u8int pk[MLKEM1024_PUBLICKEYBYTES],
-    const u8int coins[MLKEM_SYMBYTES]
-);
 int mlkem1024_enc(
     u8int ct[MLKEM1024_CIPHERTEXTBYTES],
     u8int ss[MLKEM_BYTES],
@@ -133,11 +93,5 @@ int mlkem1024_enc(
 int mlkem1024_dec(
     u8int ss[MLKEM_BYTES],
     const u8int ct[MLKEM1024_CIPHERTEXTBYTES],
-    const u8int sk[MLKEM1024_SECRETKEYBYTES]
-);
-int mlkem1024_check_pk(
-    const u8int pk[MLKEM1024_PUBLICKEYBYTES]
-);
-int mlkem1024_check_sk(
     const u8int sk[MLKEM1024_SECRETKEYBYTES]
 );
