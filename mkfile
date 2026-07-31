@@ -37,9 +37,6 @@ build/:
 
 $O512 $O768 $O1024: build/
 
-main.$O: main.c
-	$CC -o $target -p $CFLAGS main.c
-
 build/mlkem512/%.$O:	%.c
 	$CC -o $target -p '-DMLK_CONFIG_PARAMETER_SET=512' $CFLAGS $stem.c
 
