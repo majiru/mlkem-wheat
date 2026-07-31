@@ -46,7 +46,6 @@
 
 /* Reference: Not implemented in the reference implementation @[REF]. */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                      MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
 {
@@ -79,7 +78,6 @@ cleanup:
 
 /* Reference: Not implemented in the reference implementation @[REF]. */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
                      MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
 {
@@ -98,12 +96,6 @@ int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
    * of this function.
    */
 
-  /* Declassify the public part of the secret key */
-  MLK_CT_TESTING_DECLASSIFY(sk + MLKEM_INDCPA_SECRETKEYBYTES,
-                            MLKEM_INDCCA_PUBLICKEYBYTES);
-  MLK_CT_TESTING_DECLASSIFY(
-      sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-
   mlk_hash_h(test, sk + MLKEM_INDCPA_SECRETKEYBYTES,
              MLKEM_INDCCA_PUBLICKEYBYTES);
   /* This doesn't have to be a constant-time memcmp, but it's the only place
@@ -121,7 +113,6 @@ cleanup:
   return ret;
 }
 
-MLK_MUST_CHECK_RETURN_VALUE
 static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                          u8int const sk[MLKEM_INDCCA_SECRETKEYBYTES],
                          MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
@@ -132,7 +123,6 @@ static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  * @[FIPS203, Section 7.1, Pairwise Consistency]. */
 
 /* Reference: Not implemented in the reference implementation @[REF]. */
-MLK_MUST_CHECK_RETURN_VALUE
 static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                          u8int const sk[MLKEM_INDCCA_SECRETKEYBYTES],
                          MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
@@ -169,8 +159,6 @@ static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
 #endif /* MLK_CONFIG_KEYGEN_PCT_BREAKAGE_TEST */
 
   ret = mlk_ct_memcmp(ss_enc, ss_dec, MLKEM_SSBYTES);
-  /* The result of the PCT is public. */
-  MLK_CT_TESTING_DECLASSIFY(&ret, sizeof(ret));
 
   if (ret != 0)
   {
@@ -187,7 +175,6 @@ cleanup:
   return ret;
 }
 #else /* MLK_CONFIG_KEYGEN_PCT */
-MLK_MUST_CHECK_RETURN_VALUE
 static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                          u8int const sk[MLKEM_INDCCA_SECRETKEYBYTES],
                          MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
@@ -222,9 +209,6 @@ int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
   /* Value z for pseudo-random output on reject */
   mlk_memcpy(sk + MLKEM_INDCCA_SECRETKEYBYTES - MLKEM_SYMBYTES,
              coins + MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-
-  /* Declassify public key */
-  MLK_CT_TESTING_DECLASSIFY(pk, MLKEM_INDCCA_PUBLICKEYBYTES);
 
   /* Pairwise Consistency Test (PCT) @[FIPS140_3_IG, p.87] */
   ret = mlk_check_pct(pk, sk, context);
@@ -263,8 +247,6 @@ int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
     ret = MLK_ERR_RNG_FAIL;
     goto cleanup;
   }
-
-  MLK_CT_TESTING_SECRET(coins, 2 * MLKEM_SYMBYTES);
 
   ret = mlk_kem_keypair_derand(pk, sk, coins, context);
 
@@ -347,8 +329,6 @@ int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
     ret = MLK_ERR_RNG_FAIL;
     goto cleanup;
   }
-
-  MLK_CT_TESTING_SECRET(coins, MLKEM_SYMBYTES);
 
   ret = mlk_kem_enc_derand(ct, ss, pk, coins, context);
 

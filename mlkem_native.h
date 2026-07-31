@@ -62,7 +62,7 @@
 #define MLK_API_CONCAT(x, y) MLK_API_CONCAT_(x, y)
 #define MLK_API_CONCAT_UNDERSCORE(x, y) MLK_API_CONCAT(MLK_API_CONCAT(x, _), y)
 
-#include "mlkem_native_config.h"
+#define MLK_CONFIG_NAMESPACE_PREFIX mlkem
 
 #define MLK_CONFIG_API_PARAMETER_SET MLK_CONFIG_PARAMETER_SET
 

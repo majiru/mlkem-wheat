@@ -2,9 +2,6 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
-#ifndef MLK_COMMON_H
-#define MLK_COMMON_H
-
 #include <u.h>
 #include <libc.h>
 #include <mp.h>
@@ -12,9 +9,12 @@
 
 #include "limits.h"
 #define NULL 0
-#define MLK_BUILD_INTERNAL
-#include "mlkem_native_config.h"
-#include "sys.h"
+#define MLK_CONFIG_NAMESPACE_PREFIX mlkem
+
+#define MLK_DEFAULT_ALIGN 32
+#define MLK_ALIGN_UP(N) \
+  ((((N) + (MLK_DEFAULT_ALIGN - 1)) / MLK_DEFAULT_ALIGN) * MLK_DEFAULT_ALIGN)
+#define MLK_ALIGN /* No known support for alignment constraints */
 
 #define MLKEM_N 256
 #define MLKEM_Q 3329
@@ -97,5 +97,3 @@
 /* An rng failure occured. Might be due to insufficient entropy or
  * system misconfiguration. */
 #define MLK_ERR_RNG_FAIL -3
-
-#endif /* !MLK_COMMON_H */

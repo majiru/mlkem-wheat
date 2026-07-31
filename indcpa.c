@@ -353,14 +353,6 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
 
   mlk_hash_g(buf, coins_with_domain_separator, MLKEM_SYMBYTES + 1);
 
-  /*
-   * Declassify the public seed.
-   * Required to use it in conditional-branches in rejection sampling.
-   * This is needed because all output of randombytes is marked as secret
-   * (=undefined)
-   */
-  MLK_CT_TESTING_DECLASSIFY(publicseed, MLKEM_SYMBYTES);
-
   mlk_gen_matrix(a, publicseed, 0 /* no transpose */);
 
   mlk_keypair_getnoise_eta1(skpv, e, noiseseed);
@@ -428,14 +420,6 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
 
   mlk_unpack_pk(pkpv, seed, pk);
   mlk_poly_frommsg(k, m);
-
-  /*
-   * Declassify the public seed.
-   * Required to use it in conditional-branches in rejection sampling.
-   * This is needed because in re-encryption the publicseed originated from sk
-   * which is marked undefined.
-   */
-  MLK_CT_TESTING_DECLASSIFY(seed, MLKEM_SYMBYTES);
 
   mlk_gen_matrix(at, seed, 1 /* transpose */);
 

@@ -54,7 +54,6 @@ void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
  * @retval MLK_ERR_RNG_FAIL      Random number generation failed.
  */
 MLK_INTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
                               u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
                               const u8int coins[MLKEM_SYMBYTES],
@@ -83,7 +82,6 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_INTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
                    const u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
@@ -112,7 +110,6 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_INTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int c[MLKEM_INDCPA_BYTES],
                    const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],

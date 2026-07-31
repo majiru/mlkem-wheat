@@ -49,7 +49,6 @@
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                      MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
 
@@ -74,7 +73,6 @@ int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
                      MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
 
@@ -99,7 +97,6 @@ int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                            u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
                            const u8int coins[2 * MLKEM_SYMBYTES],
@@ -125,7 +122,6 @@ int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  * @retval MLK_ERR_FAIL          MLK_CONFIG_KEYGEN_PCT enabled and PCT failed.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                     u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
                     MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
@@ -154,7 +150,6 @@ int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                        u8int ss[MLKEM_SSBYTES],
                        const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
@@ -184,7 +179,6 @@ int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
  *                               for the public key failed.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                 u8int ss[MLKEM_SSBYTES],
                 const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
@@ -212,7 +206,6 @@ int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-MLK_MUST_CHECK_RETURN_VALUE
 int mlk_kem_dec(u8int ss[MLKEM_SSBYTES],
                 const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                 const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
