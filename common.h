@@ -7,8 +7,6 @@
 #include <mp.h>
 #include <libsec.h>
 
-#include "limits.h"
-#define NULL 0
 #define MLK_CONFIG_NAMESPACE_PREFIX mlkem
 
 #define MLK_DEFAULT_ALIGN 32
@@ -48,8 +46,6 @@
 #define MLK_INTERNAL_DATA_DEFINITION
 #define MLK_EXTERNAL_API
 
-#define MLK_FIPS202_HEADER_FILE "fips202.h"
-
 /* Standard library function replacements */
 #define mlk_memcpy memcpy
 #define mlk_memset memset
@@ -75,7 +71,7 @@
   do                                                   \
   {                                                    \
     memset(mlk_alloc_##v, 0, sizeof(mlk_alloc_##v));   \
-    (v) = NULL;                                        \
+    (v) = nil;                                         \
     USED((v));                                         \
   } while (0)
 

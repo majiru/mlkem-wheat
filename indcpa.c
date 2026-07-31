@@ -258,13 +258,13 @@ static void mlk_keypair_getnoise_eta1(mlk_polyvec *pv, mlk_polyvec *e,
                             seed, 0, 1, 2, 3);
 #elif MLKEM_K == 3
   /*
-   * Only the first three output buffers are needed, so we pass NULL as
+   * Only the first three output buffers are needed, so we pass nil as
    * the fourth parameter, and 0xFF as its dummy nonce.
    */
-  mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], &pv->vec[2], NULL, seed,
+  mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], &pv->vec[2], nil, seed,
                             0, 1, 2, 0xFF);
   /* Same here */
-  mlk_poly_getnoise_eta1_4x(&e->vec[0], &e->vec[1], &e->vec[2], NULL, seed, 3,
+  mlk_poly_getnoise_eta1_4x(&e->vec[0], &e->vec[1], &e->vec[2], nil, seed, 3,
                             4, 5, 0xFF);
 #elif MLKEM_K == 4
   mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], &pv->vec[2], &pv->vec[3],
@@ -299,7 +299,7 @@ static void mlk_enc_getnoise_eta1_eta2(mlk_polyvec *sp, mlk_polyvec *ep,
    * In this call, only the first three output buffers are needed.
    * The last parameter is a dummy that's overwritten later.
    */
-  mlk_poly_getnoise_eta1_4x(&sp->vec[0], &sp->vec[1], &sp->vec[2], NULL, coins,
+  mlk_poly_getnoise_eta1_4x(&sp->vec[0], &sp->vec[1], &sp->vec[2], nil, coins,
                             0, 1, 2, 0xFF /* irrelevant */);
   /* The fourth output buffer in this call _is_ used. */
   mlk_poly_getnoise_eta2_4x(&ep->vec[0], &ep->vec[1], &ep->vec[2], epp, coins,
@@ -336,8 +336,8 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
   MLK_ALLOC(skpv, mlk_polyvec, 1);
   MLK_ALLOC(skpv_cache, mlk_polyvec_mulcache, 1);
 
-  if (buf == NULL || coins_with_domain_separator == NULL || a == NULL ||
-      e == NULL || pkpv == NULL || skpv == NULL || skpv_cache == NULL)
+  if (buf == nil || coins_with_domain_separator == nil || a == nil ||
+      e == nil || pkpv == nil || skpv == nil || skpv_cache == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -409,8 +409,8 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
   MLK_ALLOC(epp, mlk_poly, 1);
   MLK_ALLOC(sp_cache, mlk_polyvec_mulcache, 1);
 
-  if (seed == NULL || at == NULL || sp == NULL || pkpv == NULL || ep == NULL ||
-      b == NULL || v == NULL || k == NULL || epp == NULL || sp_cache == NULL)
+  if (seed == nil || at == nil || sp == nil || pkpv == nil || ep == nil ||
+      b == nil || v == nil || k == nil || epp == nil || sp_cache == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -472,7 +472,7 @@ int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
   MLK_ALLOC(sb, mlk_poly, 1);
   MLK_ALLOC(b_cache, mlk_polyvec_mulcache, 1);
 
-  if (b == NULL || skpv == NULL || v == NULL || sb == NULL || b_cache == NULL)
+  if (b == nil || skpv == nil || v == nil || sb == nil || b_cache == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;

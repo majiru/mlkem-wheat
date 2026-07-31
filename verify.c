@@ -4,9 +4,8 @@
  */
 #include <u.h>
 #include <libc.h>
-
-#include "limits.h"
 #include "verify.h"
+
 /*
  * Masking value used in constant-time functions from
  * verify.h to block the compiler's range analysis and
@@ -74,7 +73,7 @@ s16int mlk_cast_u16into_int16(u16int x)
  */
 u16int mlk_cast_s32into_uint16(s32int x)
 {
-  return (u16int)(x & (s32int)UINT16_MAX);
+  return (u16int)(x & (s32int)0xffff);
 }
 
 /**

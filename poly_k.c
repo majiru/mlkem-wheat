@@ -383,7 +383,7 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_prf_eta1(buf[0], extkey[0]);
   mlk_prf_eta1(buf[1], extkey[1]);
   mlk_prf_eta1(buf[2], extkey[2]);
-  if (r3 != NULL)
+  if (r3 != nil)
   {
     mlk_prf_eta1(buf[3], extkey[3]);
   }
@@ -391,7 +391,7 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_poly_cbd_eta1(r0, buf[0]);
   mlk_poly_cbd_eta1(r1, buf[1]);
   mlk_poly_cbd_eta1(r2, buf[2]);
-  if (r3 != NULL)
+  if (r3 != nil)
   {
     mlk_poly_cbd_eta1(r3, buf[3]);
     mlk_assert_abs_bound(r3, MLKEM_N, MLKEM_ETA1 + 1);

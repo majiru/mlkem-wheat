@@ -95,11 +95,9 @@ static unsigned mlk_rej_uniform(s16int *r, unsigned target,
   return ctr;
 }
 
-#ifndef MLKEM_GEN_MATRIX_NBLOCKS
 #define MLKEM_GEN_MATRIX_NBLOCKS                                       \
   ((12 * MLKEM_N / 8 * ((u32int)1 << 12) / MLKEM_Q + MLK_XOF_RATE) / \
    MLK_XOF_RATE)
-#endif
 
 MLK_INTERNAL_API
 void mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])

@@ -41,15 +41,15 @@ s16int mlk_montgomery_reduce(s32int a)
 
   /* Compute a*q^{-1} mod 2^16 in unsigned representatives. */
   const u16int a_reduced = mlk_cast_s32into_uint16(a);
-  const u16int a_inverted = (a_reduced * QINV) & UINT16_MAX;
+  const u16int a_inverted = (a_reduced * QINV) & 0xffff;
 
   /* Lift to signed canonical representative mod 2^16. */
   const s16int t = mlk_cast_u16into_int16(a_inverted);
 
   s32int r;
 
-  mlk_assert(a < +(INT32_MAX - (((s32int)1 << 15) * MLKEM_Q)) &&
-             a > -(INT32_MAX - (((s32int)1 << 15) * MLKEM_Q)));
+  mlk_assert(a < +(0xffffffffU - (((s32int)1 << 15) * MLKEM_Q)) &&
+             a > -(0xffffffffU - (((s32int)1 << 15) * MLKEM_Q)));
 
   r = a - ((s32int)t * MLKEM_Q);
 

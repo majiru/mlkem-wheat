@@ -52,7 +52,7 @@ int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
   MLK_ALLOC(p, mlk_polyvec, 1);
   MLK_ALLOC(p_reencoded, u8int, MLKEM_POLYVECBYTES);
 
-  if (p == NULL || p_reencoded == NULL)
+  if (p == nil || p_reencoded == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -82,7 +82,7 @@ int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
   int ret;
   MLK_ALLOC(test, u8int, MLKEM_SYMBYTES);
 
-  if (test == NULL)
+  if (test == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -128,7 +128,7 @@ static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
   MLK_ALLOC(ss_enc, u8int, MLKEM_SSBYTES);
   MLK_ALLOC(ss_dec, u8int, MLKEM_SSBYTES);
 
-  if (ct == NULL || ss_enc == NULL || ss_dec == NULL)
+  if (ct == nil || ss_enc == nil || ss_dec == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -228,7 +228,7 @@ int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
   int ret;
   MLK_ALLOC(coins, u8int, 2 * MLKEM_SYMBYTES);
 
-  if (coins == NULL)
+  if (coins == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -263,7 +263,7 @@ int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
   MLK_ALLOC(buf, u8int, 2 * MLKEM_SYMBYTES);
   MLK_ALLOC(kr, u8int, 2 * MLKEM_SYMBYTES);
 
-  if (buf == NULL || kr == NULL)
+  if (buf == nil || kr == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -309,7 +309,7 @@ int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
   int ret;
   MLK_ALLOC(coins, u8int, MLKEM_SYMBYTES);
 
-  if (coins == NULL)
+  if (coins == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
@@ -345,7 +345,7 @@ int mlk_kem_dec(u8int ss[MLKEM_SSBYTES],
   MLK_ALLOC(kr, u8int, 2 * MLKEM_SYMBYTES);
   MLK_ALLOC(tmp, u8int, MLKEM_SYMBYTES + MLKEM_INDCCA_CIPHERTEXTBYTES);
 
-  if (buf == NULL || kr == NULL || tmp == NULL)
+  if (buf == nil || kr == nil || tmp == nil)
   {
     ret = MLK_ERR_OUT_OF_MEMORY;
     goto cleanup;
