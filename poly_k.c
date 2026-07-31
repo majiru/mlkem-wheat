@@ -44,6 +44,109 @@
   MLK_ADD_PARAM_SET(mlk_polyvec_basemul_acc_montgomery_cached_c)
 /* End of parameter set namespacing */
 
+/**
+ * Compression (du bits) and subsequent serialization of a polynomial.
+ *
+ * @spec{Implements `ByteEncode_{d_u} (Compress_{d_u} (u))` in @[FIPS203,
+ * Algorithm 14 (K-PKE.Encrypt), L22], with level-specific d_u defined in
+ * @[FIPS203, Table 2], and given by MLKEM_DU here.}
+ *
+ * @param[out] r Output byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DU
+ *               bytes).
+ * @param[in]  a Input polynomial. Coefficients must be unsigned canonical,
+ *               i.e. in [0,1,..,MLKEM_Q-1].
+ */
+void mlk_poly_compress_du(
+    u8int r[MLKEM_POLYCOMPRESSEDBYTES_DU], const mlk_poly *a)
+{
+#if MLKEM_DU == 10
+  mlk_poly_compress_d10(r, a);
+#elif MLKEM_DU == 11
+  mlk_poly_compress_d11(r, a);
+#else
+#error "Invalid value of MLKEM_DU"
+#endif
+}
+
+/**
+ * De-serialization and subsequent decompression (du bits) of a polynomial;
+ * approximate inverse of mlk_poly_compress_du.
+ *
+ * Upon return, the coefficients of the output polynomial are
+ * unsigned-canonical (non-negative and smaller than MLKEM_Q).
+ *
+ * @spec{Implements `Decompress_{d_u} (ByteDecode_{d_u} (u))` in @[FIPS203,
+ * Algorithm 15 (K-PKE.Decrypt), L3], with level-specific d_u defined in
+ * @[FIPS203, Table 2], and given by MLKEM_DU here.}
+ *
+ * @param[out] r Output polynomial.
+ * @param[in]  a Input byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DU
+ *               bytes).
+ */
+void mlk_poly_decompress_du(
+    mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_DU])
+{
+#if MLKEM_DU == 10
+  mlk_poly_decompress_d10(r, a);
+#elif MLKEM_DU == 11
+  mlk_poly_decompress_d11(r, a);
+#else
+#error "Invalid value of MLKEM_DU"
+#endif
+}
+
+/**
+ * Compression (dv bits) and subsequent serialization of a polynomial.
+ *
+ * @spec{Implements `ByteEncode_{d_v} (Compress_{d_v} (v))` in @[FIPS203,
+ * Algorithm 14 (K-PKE.Encrypt), L23], with level-specific d_v defined in
+ * @[FIPS203, Table 2], and given by MLKEM_DV here.}
+ *
+ * @param[out] r Output byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DV
+ *               bytes).
+ * @param[in]  a Input polynomial. Coefficients must be unsigned canonical,
+ *               i.e. in [0,1,..,MLKEM_Q-1].
+ */
+void mlk_poly_compress_dv(
+    u8int r[MLKEM_POLYCOMPRESSEDBYTES_DV], const mlk_poly *a)
+{
+#if MLKEM_DV == 4
+  mlk_poly_compress_d4(r, a);
+#elif MLKEM_DV == 5
+  mlk_poly_compress_d5(r, a);
+#else
+#error "Invalid value of MLKEM_DV"
+#endif
+}
+
+/**
+ * De-serialization and subsequent decompression (dv bits) of a polynomial;
+ * approximate inverse of mlk_poly_compress_dv.
+ *
+ * Upon return, the coefficients of the output polynomial are
+ * unsigned-canonical (non-negative and smaller than MLKEM_Q).
+ *
+ * @spec{Implements `Decompress_{d_v} (ByteDecode_{d_v} (v))` in @[FIPS203,
+ * Algorithm 15 (K-PKE.Decrypt), L4], with level-specific d_v defined in
+ * @[FIPS203, Table 2], and given by MLKEM_DV here.}
+ *
+ * @param[out] r Output polynomial.
+ * @param[in]  a Input byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DV
+ *               bytes).
+ */
+void mlk_poly_decompress_dv(
+    mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_DV])
+{
+#if MLKEM_DV == 4
+  mlk_poly_decompress_d4(r, a);
+#elif MLKEM_DV == 5
+  mlk_poly_decompress_d5(r, a);
+#else
+#error "Invalid value of MLKEM_DV"
+#endif
+}
+
+
 /* Reference: `polyvec_compress()` in the reference implementation @[REF]
  *            - In contrast to the reference implementation, we assume
  *              unsigned canonical coefficients here.
@@ -244,7 +347,7 @@ void mlk_polyvec_tomont(mlk_polyvec *r)
  * @param[out] r   Output polynomial.
  * @param[in]  buf Input byte array.
  */
-static MLK_INLINE void mlk_poly_cbd_eta1(
+static void mlk_poly_cbd_eta1(
     mlk_poly *r, const u8int buf[MLKEM_ETA1 * MLKEM_N / 4])
 {
 #if MLKEM_ETA1 == 2
@@ -319,7 +422,7 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
  * @param[out] r   Output polynomial.
  * @param[in]  buf Input byte array.
  */
-static MLK_INLINE void mlk_poly_cbd_eta2(
+static void mlk_poly_cbd_eta2(
     mlk_poly *r, const u8int buf[MLKEM_ETA2 * MLKEM_N / 4])
 {
 #if MLKEM_ETA2 == 2

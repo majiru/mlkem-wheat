@@ -99,7 +99,7 @@
  * This option only has an effect if MLK_CONFIG_KEYGEN_PCT is set.
  */
 /* #define MLK_CONFIG_KEYGEN_PCT_BREAKAGE_TEST
-   static MLK_INLINE int mlk_break_pct(void)
+   int mlk_break_pct(void)
    {
        ... return 0/1 depending on whether PCT should be broken ...
    }

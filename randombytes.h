@@ -17,22 +17,4 @@
  * @retval 0     Success.
  * @retval other Failure; top-level APIs propagate this as MLK_ERR_RNG_FAIL.
  */
-int randombytes(u8int *out, ulong outlen);
-
-/**
- * Internal wrapper around randombytes().
- *
- * Fills a buffer with cryptographically secure random bytes.
- *
- * This function can be replaced by setting MLK_CONFIG_CUSTOM_RANDOMBYTES
- * and defining mlk_randombytes directly.
- *
- * @param[out] out    Output buffer.
- * @param      outlen Number of random bytes to write.
- *
- * @retval 0     Success.
- * @retval other Failure; top-level APIs propagate this as MLK_ERR_RNG_FAIL.
- */
-MLK_MUST_CHECK_RETURN_VALUE
-static MLK_INLINE int mlk_randombytes(u8int *out, ulong outlen)
-{ return randombytes(out, outlen); }
+int mlk_randombytes(u8int *out, ulong outlen);

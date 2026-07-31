@@ -46,39 +46,7 @@ typedef struct
  * @return Integer congruent to a * R^-1 modulo MLKEM_Q, with absolute value
  *         <= ceil(|a| / 2^16) + (MLKEM_Q + 1)/2.
  */
-static MLK_ALWAYS_INLINE s16int mlk_montgomery_reduce(s32int a)
-{
-  /* check-magic: 62209 == unsigned_mod(pow(MLKEM_Q, -1, 2^16), 2^16) */
-  const u32int QINV = 62209;
-
-  /* Compute a*q^{-1} mod 2^16 in unsigned representatives. */
-  const u16int a_reduced = mlk_cast_s32into_uint16(a);
-  const u16int a_inverted = (a_reduced * QINV) & UINT16_MAX;
-
-  /* Lift to signed canonical representative mod 2^16. */
-  const s16int t = mlk_cast_u16into_int16(a_inverted);
-
-  s32int r;
-
-  mlk_assert(a < +(INT32_MAX - (((s32int)1 << 15) * MLKEM_Q)) &&
-             a > -(INT32_MAX - (((s32int)1 << 15) * MLKEM_Q)));
-
-  r = a - ((s32int)t * MLKEM_Q);
-
-  /*
-   * PORTABILITY: Right-shift on a signed integer is, strictly-speaking,
-   * implementation-defined for negative left argument. Here,
-   * we assume it's sign-preserving "arithmetic" shift right. (C99 6.5.7 (5))
-   */
-  r = r >> 16;
-  /* Bounds: |r >> 16| <= ceil(|r| / 2^16)
-   *                   <= ceil(|a| / 2^16 + MLKEM_Q / 2)
-   *                   <= ceil(|a| / 2^16) + (MLKEM_Q + 1) / 2
-   *
-   * (Note that |a >> n| = ceil(|a| / 2^16) for negative a)
-   */
-  return (s16int)r;
-}
+s16int mlk_montgomery_reduce(s32int a);
 
 /**
  * In-place conversion of all coefficients of a polynomial from the normal
