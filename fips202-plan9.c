@@ -1,5 +1,4 @@
 #include "fips202.h"
-#if !defined(MLK_CONFIG_MULTILEVEL_NO_SHARED)
 
 void
 mlk_shake128_init(mlk_shake128ctx *state)
@@ -43,5 +42,3 @@ mlk_sha3_512(u8int *output, const u8int *input, ulong inlen)
 {
 	sha3_512(input, inlen, output, nil);
 }
-
-#endif

@@ -18,14 +18,10 @@
  */
 
 #include "common.h"
-#if !defined(MLK_CONFIG_MULTILEVEL_NO_SHARED)
-
-
 #include "compress.h"
 #include "debug.h"
 #include "verify.h"
 
-#if defined(MLK_CONFIG_MULTILEVEL_WITH_SHARED) || (MLKEM_K == 2 || MLKEM_K == 3)
 /* Reference: `poly_compress()` in the reference implementation @[REF],
  *            for ML-KEM-{512,768}.
  *            - In contrast to the reference implementation, we assume
@@ -128,9 +124,6 @@ void mlk_poly_decompress_d10(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTE
   mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
-#endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_K == 2 || MLKEM_K == 3 */
-
-#if defined(MLK_CONFIG_MULTILEVEL_WITH_SHARED) || MLKEM_K == 4
 /* Reference: `poly_compress()` in the reference implementation @[REF],
  *            for ML-KEM-1024.
  *            - In contrast to the reference implementation, we assume
@@ -270,8 +263,6 @@ void mlk_poly_decompress_d11(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTE
   mlk_assert_bound(r, MLKEM_N, 0, MLKEM_Q);
 }
 
-#endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_K == 4 */
-
 /* Reference: `poly_tobytes()` in the reference implementation @[REF].
  *            - In contrast to the reference implementation, we assume
  *              unsigned canonical coefficients here.
@@ -385,8 +376,3 @@ void mlk_poly_tomsg(u8int msg[MLKEM_INDCPA_MSGBYTES], const mlk_poly *a)
   }
 }
 
-#else /* !MLK_CONFIG_MULTILEVEL_NO_SHARED */
-
-MLK_EMPTY_CU(compress)
-
-#endif /* MLK_CONFIG_MULTILEVEL_NO_SHARED */

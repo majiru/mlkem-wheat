@@ -6,7 +6,7 @@
 #define MLK_DEBUG_H
 #include "common.h"
 
-#if defined(MLKEM_DEBUG)
+#ifdef MLKEM_DEBUG
 
 /**
  * Check debug assertion.
@@ -67,31 +67,7 @@ void mlk_debug_check_bounds(const char *file, int line, const s16int *ptr,
 #define mlk_assert_abs_bound_2d(ptr, len0, len1, value_abs_bd) \
   mlk_assert_abs_bound((ptr), ((len0) * (len1)), (value_abs_bd))
 
-/* When running CBMC, convert debug assertions into proof obligations */
-#elif defined(CBMC)
-#include "cbmc.h"
-
-#define mlk_assert(val) cassert(val)
-
-#define mlk_assert_bound(ptr, len, value_lb, value_ub) \
-  cassert(array_bound(((s16int *)(ptr)), 0, (len), (value_lb), (value_ub)))
-
-#define mlk_assert_abs_bound(ptr, len, value_abs_bd) \
-  cassert(array_abs_bound(((s16int *)(ptr)), 0, (len), (value_abs_bd)))
-
-/* Because of https://github.com/diffblue/cbmc/issues/8570, we can't
- * just use a single flattened array_bound(...) here. */
-#define mlk_assert_bound_2d(ptr, M, N, value_lb, value_ub)              \
-  cassert(forall(kN, 0, (M),                                            \
-                 array_bound(&((s16int (*)[(N)])(ptr))[kN][0], 0, (N), \
-                             (value_lb), (value_ub))))
-
-#define mlk_assert_abs_bound_2d(ptr, M, N, value_abs_bd)                    \
-  cassert(forall(kN, 0, (M),                                                \
-                 array_abs_bound(&((s16int (*)[(N)])(ptr))[kN][0], 0, (N), \
-                                 (value_abs_bd))))
-
-#else /* !MLKEM_DEBUG && CBMC */
+#else
 
 #define mlk_assert(val) \
   do                    \
@@ -117,5 +93,5 @@ void mlk_debug_check_bounds(const char *file, int line, const s16int *ptr,
   } while (0)
 
 
-#endif /* !MLKEM_DEBUG && !CBMC */
+#endif /* !MLKEM_DEBUG */
 #endif /* !MLK_DEBUG_H */

@@ -22,7 +22,6 @@
 
 #include "common.h"
 
-#if defined(MLK_CHECK_APIS)
 /* Include to ensure consistency between internal kem.h
  * and external mlkem_native.h. */
 #include "mlkem_native.h"
@@ -42,7 +41,6 @@
 #error Mismatch for CIPHERTEXTBYTES between kem.h and mlkem_native.h
 #endif
 
-#endif /* MLK_CHECK_APIS */
 
 #define mlk_kem_keypair_derand \
   MLK_NAMESPACE_K(keypair_derand) MLK_CONTEXT_PARAMETERS_3

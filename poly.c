@@ -18,9 +18,6 @@
  */
 
 #include "common.h"
-#if !defined(MLK_CONFIG_MULTILEVEL_NO_SHARED)
-
-
 #include "debug.h"
 #include "poly.h"
 #include "sampling.h"
@@ -365,9 +362,3 @@ MLK_INTERNAL_API void mlk_poly_invntt_tomont(mlk_poly *p)
 
   mlk_assert_abs_bound(p, MLKEM_N, MLK_INVNTT_BOUND);
 }
-
-#else /* !MLK_CONFIG_MULTILEVEL_NO_SHARED */
-
-MLK_EMPTY_CU(mlk_poly)
-
-#endif /* MLK_CONFIG_MULTILEVEL_NO_SHARED */

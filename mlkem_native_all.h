@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
 
-#if !defined(MLK_ALL_H)
+#ifndef MLK_ALL_H
 #define MLK_ALL_H
 
 /* API for MLKEM-512 */

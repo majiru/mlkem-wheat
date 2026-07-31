@@ -289,7 +289,6 @@ static MLK_INLINE s16int mlk_scalar_decompress_d11(u16int u)
   return (s16int)((((u32int)u * MLKEM_Q) + 1024) >> 11);
 }
 
-#if defined(MLK_CONFIG_MULTILEVEL_WITH_SHARED) || (MLKEM_K == 2 || MLKEM_K == 3)
 #define mlk_poly_compress_d4 MLK_NAMESPACE(poly_compress_d4)
 /**
  * Compression (4 bits) and subsequent serialization of a polynomial.
@@ -375,9 +374,7 @@ void mlk_poly_decompress_d4(mlk_poly *r,
 MLK_INTERNAL_API
 void mlk_poly_decompress_d10(mlk_poly *r,
                              const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D10]);
-#endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_K == 2 || MLKEM_K == 3 */
 
-#if defined(MLK_CONFIG_MULTILEVEL_WITH_SHARED) || MLKEM_K == 4
 #define mlk_poly_compress_d5 MLK_NAMESPACE(poly_compress_d5)
 /**
  * Compression (5 bits) and subsequent serialization of a polynomial.
@@ -463,7 +460,6 @@ void mlk_poly_decompress_d5(mlk_poly *r,
 MLK_INTERNAL_API
 void mlk_poly_decompress_d11(mlk_poly *r,
                              const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D11]);
-#endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_K == 4 */
 
 #define mlk_poly_tobytes MLK_NAMESPACE(poly_tobytes)
 /**

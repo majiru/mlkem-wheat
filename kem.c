@@ -187,9 +187,6 @@ static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES],
 {
   USED(pk);
   USED(sk);
-#if defined(MLK_CONFIG_CONTEXT_PARAMETER)
-  ((void)context);
-#endif
   return 0;
 }
 #endif /* !MLK_CONFIG_KEYGEN_PCT */
@@ -239,9 +236,6 @@ cleanup:
   return ret;
 }
 
-#if !defined(MLK_CONFIG_NO_RANDOMIZED_API)
-/* Reference: `crypto_kem_keypair()` in the reference implementation @[REF]
- *            - We zeroize the stack buffer */
 MLK_EXTERNAL_API
 int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                     u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
@@ -273,7 +267,6 @@ cleanup:
   MLK_FREE(coins, u8int, 2 * MLKEM_SYMBYTES, context);
   return ret;
 }
-#endif /* !MLK_CONFIG_NO_RANDOMIZED_API */
 
 /* Reference: `crypto_kem_enc_derand()` in the reference implementation @[REF]
  *            - We include public key check
@@ -325,7 +318,6 @@ cleanup:
   return ret;
 }
 
-#if !defined(MLK_CONFIG_NO_RANDOMIZED_API)
 /* Reference: `crypto_kem_enc()` in the reference implementation @[REF]
  *            - We include stack buffer zeroization */
 MLK_EXTERNAL_API
@@ -359,7 +351,6 @@ cleanup:
   MLK_FREE(coins, u8int, MLKEM_SYMBYTES, context);
   return ret;
 }
-#endif /* !MLK_CONFIG_NO_RANDOMIZED_API */
 
 /* Reference: `crypto_kem_dec()` in the reference implementation @[REF]
  *            - We include secret key check

@@ -3,15 +3,17 @@
 LIB=mlkem.$objtype.a
 CFLAGS=-Fpw
 
-BASEFILES=\
-	compress.$O\
-	indcpa.$O\
-	kem.$O\
-	poly.$O\
-	poly_k.$O\
+PORT=\
 	sampling.$O\
 	verify.$O\
+	compress.$O\
 	fips202-plan9.$O\
+	poly.$O\
+
+BASEFILES=\
+	indcpa.$O\
+	kem.$O\
+	poly_k.$O\
 
 O512=\
 	${BASEFILES:%=build/mlkem512/%}\
@@ -39,16 +41,16 @@ $OFILES: build/
 	$CC -o $target $CFLAGS $stem.c
 
 build/mlkem512/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_MULTILEVEL_WITH_SHARED' '-DMLK_CONFIG_PARAMETER_SET=512' $CFLAGS $stem.c
+	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=512' $CFLAGS $stem.c
 
 build/mlkem768/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_MULTILEVEL_NO_SHARED' '-DMLK_CONFIG_PARAMETER_SET=768' $CFLAGS $stem.c
+	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=768' $CFLAGS $stem.c
 
 build/mlkem1024/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_MULTILEVEL_NO_SHARED' '-DMLK_CONFIG_PARAMETER_SET=1024' $CFLAGS $stem.c
+	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=1024' $CFLAGS $stem.c
 
 
-$LIB:V:	$O512 $O768 $O1024 randombytes.$O
+$LIB:V:	$PORT $O512 $O768 $O1024 randombytes.$O
 	ar vu $LIB $newprereq
 
 &:n:	&.$O

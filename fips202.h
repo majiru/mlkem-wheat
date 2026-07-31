@@ -100,14 +100,4 @@ void mlk_sha3_256(u8int *output, const u8int *input, ulong inlen);
  */
 void mlk_sha3_512(u8int *output, const u8int *input, ulong inlen);
 
-#if !defined(MLK_CONFIG_USE_NATIVE_BACKEND_FIPS202) || \
-    !defined(MLK_USE_FIPS202_X4_NATIVE)
-/* If you provide your own FIPS-202 implementation where the x4-
- * Keccak-f1600-x4 implementation falls back to 4-fold Keccak-f1600,
- * set this to gain a small speedup. */
-#define FIPS202_X4_DEFAULT_IMPLEMENTATION
-#endif /* !MLK_CONFIG_USE_NATIVE_BACKEND_FIPS202 || !MLK_USE_FIPS202_X4_NATIVE \
-        */
-
-
 #endif /* !MLK_FIPS202_FIPS202_H */

@@ -8,8 +8,6 @@
 
 #include "common.h"
 
-#if !defined(MLK_CONFIG_NO_RANDOMIZED_API)
-#if !defined(MLK_CONFIG_CUSTOM_RANDOMBYTES)
 /**
  * Fill a buffer with cryptographically secure random bytes.
  *
@@ -44,6 +42,4 @@ int randombytes(u8int *out, ulong outlen);
 MLK_MUST_CHECK_RETURN_VALUE
 static MLK_INLINE int mlk_randombytes(u8int *out, ulong outlen)
 { return randombytes(out, outlen); }
-#endif /* !MLK_CONFIG_CUSTOM_RANDOMBYTES */
-#endif /* !MLK_CONFIG_NO_RANDOMIZED_API */
 #endif /* !MLK_RANDOMBYTES_H */

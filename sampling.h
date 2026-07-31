@@ -32,7 +32,6 @@
 MLK_INTERNAL_API
 void mlk_poly_cbd2(mlk_poly *r, const u8int buf[2 * MLKEM_N / 4]);
 
-#if defined(MLK_CONFIG_MULTILEVEL_WITH_SHARED) || MLKEM_ETA1 == 3
 #define mlk_poly_cbd3 MLK_NAMESPACE(poly_cbd3)
 /**
  * Given an array of uniformly random bytes, compute a polynomial with
@@ -48,7 +47,6 @@ void mlk_poly_cbd2(mlk_poly *r, const u8int buf[2 * MLKEM_N / 4]);
  */
 MLK_INTERNAL_API
 void mlk_poly_cbd3(mlk_poly *r, const u8int buf[3 * MLKEM_N / 4]);
-#endif /* MLK_CONFIG_MULTILEVEL_WITH_SHARED || MLKEM_ETA1 == 3 */
 
 #define mlk_poly_rej_uniform MLK_NAMESPACE(poly_rej_uniform)
 /**
