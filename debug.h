@@ -2,8 +2,6 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
-#ifndef MLK_DEBUG_H
-#define MLK_DEBUG_H
 
 #ifdef MLKEM_DEBUG
 
@@ -91,4 +89,3 @@ void mlk_debug_check_bounds(const char *file, int line, const s16int *ptr,
 
 
 #endif /* !MLKEM_DEBUG */
-#endif /* !MLK_DEBUG_H */

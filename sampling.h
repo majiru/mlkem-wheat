@@ -12,9 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_SAMPLING_H
-#define MLK_SAMPLING_H
-
 /**
  * Given an array of uniformly random bytes, compute a polynomial with
  * coefficients distributed according to a centered binomial distribution
@@ -55,4 +52,3 @@ void mlk_poly_cbd3(mlk_poly *r, const u8int buf[3 * MLKEM_N / 4]);
 MLK_INTERNAL_API
 void mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2]);
 
-#endif /* !MLK_SAMPLING_H */

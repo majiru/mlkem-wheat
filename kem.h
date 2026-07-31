@@ -17,9 +17,6 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#ifndef MLK_KEM_H
-#define MLK_KEM_H
-
 #define mlk_kem_keypair_derand MLK_NAMESPACE_K(keypair_derand)
 #define mlk_kem_keypair MLK_NAMESPACE_K(keypair)
 #define mlk_kem_enc_derand MLK_NAMESPACE_K(enc_derand)
@@ -202,5 +199,3 @@ MLK_EXTERNAL_API
 int mlk_kem_dec(u8int ss[MLKEM_SSBYTES],
                 const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                 const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES]);
-
-#endif /* !MLK_KEM_H */
