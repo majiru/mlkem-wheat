@@ -20,14 +20,13 @@
 #ifndef MLK_KEM_H
 #define MLK_KEM_H
 
-#define mlk_kem_keypair_derand \
-  MLK_NAMESPACE_K(keypair_derand) MLK_CONTEXT_PARAMETERS_3
-#define mlk_kem_keypair MLK_NAMESPACE_K(keypair) MLK_CONTEXT_PARAMETERS_2
-#define mlk_kem_enc_derand MLK_NAMESPACE_K(enc_derand) MLK_CONTEXT_PARAMETERS_4
-#define mlk_kem_enc MLK_NAMESPACE_K(enc) MLK_CONTEXT_PARAMETERS_3
-#define mlk_kem_dec MLK_NAMESPACE_K(dec) MLK_CONTEXT_PARAMETERS_3
-#define mlk_kem_check_pk MLK_NAMESPACE_K(check_pk) MLK_CONTEXT_PARAMETERS_1
-#define mlk_kem_check_sk MLK_NAMESPACE_K(check_sk) MLK_CONTEXT_PARAMETERS_1
+#define mlk_kem_keypair_derand MLK_NAMESPACE_K(keypair_derand)
+#define mlk_kem_keypair MLK_NAMESPACE_K(keypair)
+#define mlk_kem_enc_derand MLK_NAMESPACE_K(enc_derand)
+#define mlk_kem_enc MLK_NAMESPACE_K(enc)
+#define mlk_kem_dec MLK_NAMESPACE_K(dec)
+#define mlk_kem_check_pk MLK_NAMESPACE_K(check_pk)
+#define mlk_kem_check_sk MLK_NAMESPACE_K(check_sk)
 
 /**
  * Implements modulus check mandated by FIPS 203, i.e., ensures that
@@ -49,8 +48,7 @@
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
-                     MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES]);
 
 
 /**
@@ -73,8 +71,7 @@ int mlk_kem_check_pk(const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  *                               MLK_CUSTOM_ALLOC returned NULL.
  */
 MLK_EXTERNAL_API
-int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
-                     MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES]);
 
 /**
  * Generate a public/private keypair for the ML-KEM key encapsulation mechanism.
@@ -99,8 +96,7 @@ int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
 MLK_EXTERNAL_API
 int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
                            u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
-                           const u8int coins[2 * MLKEM_SYMBYTES],
-                           MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                           const u8int coins[2 * MLKEM_SYMBYTES]);
 
 /**
  * Generate a public/private keypair for the ML-KEM key encapsulation mechanism.
@@ -123,8 +119,7 @@ int mlk_kem_keypair_derand(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
  */
 MLK_EXTERNAL_API
 int mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
-                    u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
-                    MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                    u8int sk[MLKEM_INDCCA_SECRETKEYBYTES]);
 
 /**
  * Generate ciphertext and shared secret for a given public key.
@@ -153,8 +148,7 @@ MLK_EXTERNAL_API
 int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                        u8int ss[MLKEM_SSBYTES],
                        const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
-                       const u8int coins[MLKEM_SYMBYTES],
-                       MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                       const u8int coins[MLKEM_SYMBYTES]);
 
 /**
  * Generate ciphertext and shared secret for a given public key.
@@ -181,8 +175,7 @@ int mlk_kem_enc_derand(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
 MLK_EXTERNAL_API
 int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
                 u8int ss[MLKEM_SSBYTES],
-                const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES],
-                MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES]);
 
 /**
  * Generate shared secret for a given ciphertext and private key.
@@ -208,7 +201,6 @@ int mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
 MLK_EXTERNAL_API
 int mlk_kem_dec(u8int ss[MLKEM_SSBYTES],
                 const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES],
-                const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES],
-                MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES]);
 
 #endif /* !MLK_KEM_H */

@@ -323,19 +323,18 @@ static void mlk_enc_getnoise_eta1_eta2(mlk_polyvec *sp, mlk_polyvec *ep,
 MLK_INTERNAL_API
 int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
                               u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
-                              const u8int coins[MLKEM_SYMBYTES],
-                              MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
+                              const u8int coins[MLKEM_SYMBYTES])
 {
   int ret = 0;
   const u8int *publicseed;
   const u8int *noiseseed;
-  MLK_ALLOC(buf, u8int, 2 * MLKEM_SYMBYTES, context);
-  MLK_ALLOC(coins_with_domain_separator, u8int, MLKEM_SYMBYTES + 1, context);
-  MLK_ALLOC(a, mlk_polymat, 1, context);
-  MLK_ALLOC(e, mlk_polyvec, 1, context);
-  MLK_ALLOC(pkpv, mlk_polyvec, 1, context);
-  MLK_ALLOC(skpv, mlk_polyvec, 1, context);
-  MLK_ALLOC(skpv_cache, mlk_polyvec_mulcache, 1, context);
+  MLK_ALLOC(buf, u8int, 2 * MLKEM_SYMBYTES);
+  MLK_ALLOC(coins_with_domain_separator, u8int, MLKEM_SYMBYTES + 1);
+  MLK_ALLOC(a, mlk_polymat, 1);
+  MLK_ALLOC(e, mlk_polyvec, 1);
+  MLK_ALLOC(pkpv, mlk_polyvec, 1);
+  MLK_ALLOC(skpv, mlk_polyvec, 1);
+  MLK_ALLOC(skpv_cache, mlk_polyvec_mulcache, 1);
 
   if (buf == NULL || coins_with_domain_separator == NULL || a == NULL ||
       e == NULL || pkpv == NULL || skpv == NULL || skpv_cache == NULL)
@@ -374,13 +373,13 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
 cleanup:
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-  MLK_FREE(skpv_cache, mlk_polyvec_mulcache, 1, context);
-  MLK_FREE(skpv, mlk_polyvec, 1, context);
-  MLK_FREE(pkpv, mlk_polyvec, 1, context);
-  MLK_FREE(e, mlk_polyvec, 1, context);
-  MLK_FREE(a, mlk_polymat, 1, context);
-  MLK_FREE(coins_with_domain_separator, u8int, MLKEM_SYMBYTES + 1, context);
-  MLK_FREE(buf, u8int, 2 * MLKEM_SYMBYTES, context);
+  MLK_FREE(skpv_cache, mlk_polyvec_mulcache, 1);
+  MLK_FREE(skpv, mlk_polyvec, 1);
+  MLK_FREE(pkpv, mlk_polyvec, 1);
+  MLK_FREE(e, mlk_polyvec, 1);
+  MLK_FREE(a, mlk_polymat, 1);
+  MLK_FREE(coins_with_domain_separator, u8int, MLKEM_SYMBYTES + 1);
+  MLK_FREE(buf, u8int, 2 * MLKEM_SYMBYTES);
   return ret;
 }
 
@@ -396,20 +395,19 @@ MLK_INTERNAL_API
 int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
                    const u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
-                   const u8int coins[MLKEM_SYMBYTES],
-                   MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
+                   const u8int coins[MLKEM_SYMBYTES])
 {
   int ret = 0;
-  MLK_ALLOC(seed, u8int, MLKEM_SYMBYTES, context);
-  MLK_ALLOC(at, mlk_polymat, 1, context);
-  MLK_ALLOC(sp, mlk_polyvec, 1, context);
-  MLK_ALLOC(pkpv, mlk_polyvec, 1, context);
-  MLK_ALLOC(ep, mlk_polyvec, 1, context);
-  MLK_ALLOC(b, mlk_polyvec, 1, context);
-  MLK_ALLOC(v, mlk_poly, 1, context);
-  MLK_ALLOC(k, mlk_poly, 1, context);
-  MLK_ALLOC(epp, mlk_poly, 1, context);
-  MLK_ALLOC(sp_cache, mlk_polyvec_mulcache, 1, context);
+  MLK_ALLOC(seed, u8int, MLKEM_SYMBYTES);
+  MLK_ALLOC(at, mlk_polymat, 1);
+  MLK_ALLOC(sp, mlk_polyvec, 1);
+  MLK_ALLOC(pkpv, mlk_polyvec, 1);
+  MLK_ALLOC(ep, mlk_polyvec, 1);
+  MLK_ALLOC(b, mlk_polyvec, 1);
+  MLK_ALLOC(v, mlk_poly, 1);
+  MLK_ALLOC(k, mlk_poly, 1);
+  MLK_ALLOC(epp, mlk_poly, 1);
+  MLK_ALLOC(sp_cache, mlk_polyvec_mulcache, 1);
 
   if (seed == NULL || at == NULL || sp == NULL || pkpv == NULL || ep == NULL ||
       b == NULL || v == NULL || k == NULL || epp == NULL || sp_cache == NULL)
@@ -446,16 +444,16 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
 cleanup:
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-  MLK_FREE(sp_cache, mlk_polyvec_mulcache, 1, context);
-  MLK_FREE(epp, mlk_poly, 1, context);
-  MLK_FREE(k, mlk_poly, 1, context);
-  MLK_FREE(v, mlk_poly, 1, context);
-  MLK_FREE(b, mlk_polyvec, 1, context);
-  MLK_FREE(ep, mlk_polyvec, 1, context);
-  MLK_FREE(pkpv, mlk_polyvec, 1, context);
-  MLK_FREE(sp, mlk_polyvec, 1, context);
-  MLK_FREE(at, mlk_polymat, 1, context);
-  MLK_FREE(seed, u8int, MLKEM_SYMBYTES, context);
+  MLK_FREE(sp_cache, mlk_polyvec_mulcache, 1);
+  MLK_FREE(epp, mlk_poly, 1);
+  MLK_FREE(k, mlk_poly, 1);
+  MLK_FREE(v, mlk_poly, 1);
+  MLK_FREE(b, mlk_polyvec, 1);
+  MLK_FREE(ep, mlk_polyvec, 1);
+  MLK_FREE(pkpv, mlk_polyvec, 1);
+  MLK_FREE(sp, mlk_polyvec, 1);
+  MLK_FREE(at, mlk_polymat, 1);
+  MLK_FREE(seed, u8int, MLKEM_SYMBYTES);
   return ret;
 }
 
@@ -465,15 +463,14 @@ cleanup:
 MLK_INTERNAL_API
 int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int c[MLKEM_INDCPA_BYTES],
-                   const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
-                   MLK_CONFIG_CONTEXT_PARAMETER_TYPE context)
+                   const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES])
 {
   int ret = 0;
-  MLK_ALLOC(b, mlk_polyvec, 1, context);
-  MLK_ALLOC(skpv, mlk_polyvec, 1, context);
-  MLK_ALLOC(v, mlk_poly, 1, context);
-  MLK_ALLOC(sb, mlk_poly, 1, context);
-  MLK_ALLOC(b_cache, mlk_polyvec_mulcache, 1, context);
+  MLK_ALLOC(b, mlk_polyvec, 1);
+  MLK_ALLOC(skpv, mlk_polyvec, 1);
+  MLK_ALLOC(v, mlk_poly, 1);
+  MLK_ALLOC(sb, mlk_poly, 1);
+  MLK_ALLOC(b_cache, mlk_polyvec_mulcache, 1);
 
   if (b == NULL || skpv == NULL || v == NULL || sb == NULL || b_cache == NULL)
   {
@@ -497,11 +494,11 @@ int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
 cleanup:
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-  MLK_FREE(b_cache, mlk_polyvec_mulcache, 1, context);
-  MLK_FREE(sb, mlk_poly, 1, context);
-  MLK_FREE(v, mlk_poly, 1, context);
-  MLK_FREE(skpv, mlk_polyvec, 1, context);
-  MLK_FREE(b, mlk_polyvec, 1, context);
+  MLK_FREE(b_cache, mlk_polyvec_mulcache, 1);
+  MLK_FREE(sb, mlk_poly, 1);
+  MLK_FREE(v, mlk_poly, 1);
+  MLK_FREE(skpv, mlk_polyvec, 1);
+  MLK_FREE(b, mlk_polyvec, 1);
   return ret;
 }
 

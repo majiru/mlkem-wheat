@@ -31,7 +31,7 @@ void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
                     int transposed);
 
 #define mlk_indcpa_keypair_derand \
-  MLK_NAMESPACE_K(indcpa_keypair_derand) MLK_CONTEXT_PARAMETERS_3
+  MLK_NAMESPACE_K(indcpa_keypair_derand)
 /**
  * Generate public and private key for the CPA-secure public-key encryption
  * scheme underlying ML-KEM.
@@ -56,10 +56,9 @@ void mlk_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
 MLK_INTERNAL_API
 int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
                               u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
-                              const u8int coins[MLKEM_SYMBYTES],
-                              MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                              const u8int coins[MLKEM_SYMBYTES]);
 
-#define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc) MLK_CONTEXT_PARAMETERS_4
+#define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
 /**
  * Encryption function of the CPA-secure public-key encryption scheme
  * underlying ML-KEM.
@@ -85,10 +84,9 @@ MLK_INTERNAL_API
 int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
                    const u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
-                   const u8int coins[MLKEM_SYMBYTES],
-                   MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                   const u8int coins[MLKEM_SYMBYTES]);
 
-#define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec) MLK_CONTEXT_PARAMETERS_3
+#define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec)
 /**
  * Decryption function of the CPA-secure public-key encryption scheme
  * underlying ML-KEM.
@@ -112,5 +110,4 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
 MLK_INTERNAL_API
 int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int c[MLKEM_INDCPA_BYTES],
-                   const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
-                   MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
+                   const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES]);
