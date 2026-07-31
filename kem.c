@@ -31,11 +31,27 @@
 #include "symmetric.h"
 #include "poly.h"
 #include "compress.h"
-#include "ns.h"
-#include "params.h"
 #include "poly_k.h"
 #include "indcpa.h"
 #include "kem.h"
+#include "ns.h"
+#include "params.h"
+
+#define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
+#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
+#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
+
+#define mlk_indcpa_keypair_derand MLK_NAMESPACE_K(indcpa_keypair_derand)
+#define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
+#define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec)
+
+#define mlk_kem_keypair_derand MLK_NAMESPACE_K(keypair_derand)
+#define mlk_kem_keypair MLK_NAMESPACE_K(keypair)
+#define mlk_kem_enc_derand MLK_NAMESPACE_K(enc_derand)
+#define mlk_kem_enc MLK_NAMESPACE_K(enc)
+#define mlk_kem_dec MLK_NAMESPACE_K(dec)
+#define mlk_kem_check_pk MLK_NAMESPACE_K(check_pk)
+#define mlk_kem_check_sk MLK_NAMESPACE_K(check_sk)
 
 /* Parameter set namespacing
  * This is to facilitate building multiple instances

@@ -30,9 +30,29 @@
 #include "poly.h"
 #include "sampling.h"
 #include "compress.h"
+#include "poly_k.h"
 #include "ns.h"
 #include "params.h"
-#include "poly_k.h"
+
+#define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
+#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
+#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
+#define mlk_poly_compress_du MLK_NAMESPACE_K(poly_compress_du)
+#define mlk_poly_decompress_du MLK_NAMESPACE_K(poly_decompress_du)
+#define mlk_poly_compress_dv MLK_NAMESPACE_K(poly_compress_dv)
+#define mlk_poly_decompress_dv MLK_NAMESPACE_K(poly_decompress_dv)
+#define mlk_polyvec_compress_du MLK_NAMESPACE_K(polyvec_compress_du)
+#define mlk_polyvec_decompress_du MLK_NAMESPACE_K(polyvec_decompress_du)
+#define mlk_polyvec_ntt MLK_NAMESPACE_K(polyvec_ntt)
+#define mlk_polyvec_invntt_tomont MLK_NAMESPACE_K(polyvec_invntt_tomont)
+#define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
+#define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
+#define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
+#define mlk_polyvec_tomont MLK_NAMESPACE_K(polyvec_tomont)
+#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
+#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
+#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
+#define mlk_poly_getnoise_eta1122_4x MLK_NAMESPACE_K(poly_getnoise_eta1122_4x)
 
 /* Parameter set namespacing
  * This is to facilitate building multiple instances
