@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "debug.h"
+#include "verify.h"
 #include "fips202.h"
 #include "symmetric.h"
 #include "poly.h"

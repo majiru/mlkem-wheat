@@ -19,10 +19,10 @@
 
 #include "common.h"
 #include "debug.h"
+#include "verify.h"
 #include "poly.h"
 #include "sampling.h"
 #include "symmetric.h"
-#include "verify.h"
 
 /**
  * Montgomery multiplication modulo MLKEM_Q.

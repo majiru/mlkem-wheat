@@ -27,9 +27,6 @@
  *   https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/hqbtIGFKIpU/m/H14H0wOlBgAJ
  */
 
-#ifndef MLK_VERIFY_H
-#define MLK_VERIFY_H
-
 /* Constant-time comparisons and conditional operations
 
    We reduce the risk for compilation into variable-time code
@@ -340,5 +337,3 @@ static void mlk_zeroize(void *ptr, ulong len)
 {
   memset(ptr, 0, len);
 }
-
-#endif /* !MLK_VERIFY_H */

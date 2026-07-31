@@ -19,6 +19,7 @@
 
 #include "common.h"
 #include "debug.h"
+#include "verify.h"
 #include "randombytes.h"
 #include "poly.h"
 #include "sampling.h"

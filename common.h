@@ -79,14 +79,10 @@
   MLK_ALIGN T mlk_alloc_##v[N];     \
   T *v = mlk_alloc_##v
 
-/* TODO: This leads to a circular dependency between common and verify.h
- * It just works out before we're at the end of the file, but it's still
- * prone to issues in the future. */
-#include "verify.h"
 #define MLK_FREE(v, T, N, context)                     \
   do                                                   \
   {                                                    \
-    mlk_zeroize(mlk_alloc_##v, sizeof(mlk_alloc_##v)); \
+    memset(mlk_alloc_##v, 0, sizeof(mlk_alloc_##v));   \
     (v) = NULL;                                        \
     USED((v));                                         \
   } while (0)
