@@ -28,7 +28,7 @@ OFILES=\
 	main.$O\
 	notrandombytes.$O\
 
-CLEANFILES=$OFILES $O512 $O768 $O1024 $LIB
+CLEANFILES=$OFILES $O512 $O768 $O1024 $LIB $PORT
 
 </sys/src/cmd/mkone
 
