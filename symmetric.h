@@ -12,12 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_SYMMETRIC_H
-#define MLK_SYMMETRIC_H
-
-#include "common.h"
-#include MLK_FIPS202_HEADER_FILE
-
 /* Macros denoting FIPS 203 specific Hash functions */
 
 /* Hash function H, @[FIPS203, Section 4.1, Eq (4.4)] */
@@ -48,4 +42,3 @@
 
 #define MLK_XOF_RATE SHAKE128_RATE
 
-#endif /* !MLK_SYMMETRIC_H */

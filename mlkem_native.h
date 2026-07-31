@@ -12,9 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_H
-#define MLK_H
-
 /******************************* Key sizes ************************************/
 
 #define MLKEM512_SECRETKEYBYTES 1632
@@ -257,5 +254,3 @@ int MLK_API_NAMESPACE(check_sk)(
 #undef MLK_API_CONCAT_
 #undef MLK_API_CONCAT_UNDERSCORE
 #undef MLK_API_NAMESPACE
-
-#endif /* !MLK_H */

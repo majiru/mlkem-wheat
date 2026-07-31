@@ -2,6 +2,7 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
+#include "common.h"
 #include "verify.h"
 /*
  * Masking value used in constant-time functions from

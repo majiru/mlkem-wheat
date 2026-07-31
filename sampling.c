@@ -20,8 +20,10 @@
 #include "common.h"
 
 #include "debug.h"
-#include "sampling.h"
+#include "fips202.h"
 #include "symmetric.h"
+#include "poly.h"
+#include "sampling.h"
 
 /**
  * Run rejection sampling on uniform random bytes to generate uniform random

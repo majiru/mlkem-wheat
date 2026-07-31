@@ -4,7 +4,6 @@
  */
 #ifndef MLK_DEBUG_H
 #define MLK_DEBUG_H
-#include "common.h"
 
 #ifdef MLKEM_DEBUG
 
@@ -17,7 +16,6 @@
  * @param     line Line number.
  * @param     val  Value asserted to be non-zero.
  */
-#define mlk_debug_check_assert MLK_NAMESPACE(mlkem_debug_assert)
 void mlk_debug_check_assert(const char *file, int line, const int val);
 
 /**
@@ -32,7 +30,6 @@ void mlk_debug_check_assert(const char *file, int line, const int val);
  * @param     lower_bound_exclusive Exclusive lower bound.
  * @param     upper_bound_exclusive Exclusive upper bound.
  */
-#define mlk_debug_check_bounds MLK_NAMESPACE(mlkem_debug_check_bounds)
 void mlk_debug_check_bounds(const char *file, int line, const s16int *ptr,
                             unsigned len, int lower_bound_exclusive,
                             int upper_bound_exclusive);

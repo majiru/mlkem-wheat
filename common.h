@@ -9,41 +9,45 @@
 #include <libc.h>
 #include <mp.h>
 #include <libsec.h>
+
 #include "limits.h"
-
 #define NULL 0
-
 #define MLK_BUILD_INTERNAL
-
 #include "mlkem_native_config.h"
-
-#include "params.h"
 #include "sys.h"
+
+#define MLKEM_N 256
+#define MLKEM_Q 3329
+#define MLKEM_Q_HALF ((MLKEM_Q + 1) / 2) /* 1665 */
+#define MLKEM_UINT12_LIMIT 4096
+
+#define MLKEM_SYMBYTES 32 /* size in bytes of hashes, and seeds */
+#define MLKEM_SSBYTES 32  /* size in bytes of shared key */
+
+#define MLKEM_POLYBYTES 384
+#define MLKEM_POLYVECBYTES (MLKEM_K * MLKEM_POLYBYTES)
+
+#define MLKEM_POLYCOMPRESSEDBYTES_D4 128
+#define MLKEM_POLYCOMPRESSEDBYTES_D5 160
+#define MLKEM_POLYCOMPRESSEDBYTES_D10 320
+#define MLKEM_POLYCOMPRESSEDBYTES_D11 352
+
+#define MLKEM_ETA2 2
+
+#define MLKEM_INDCPA_MSGBYTES (MLKEM_SYMBYTES)
+#define MLKEM_INDCPA_PUBLICKEYBYTES (MLKEM_POLYVECBYTES + MLKEM_SYMBYTES)
+#define MLKEM_INDCPA_SECRETKEYBYTES (MLKEM_POLYVECBYTES)
+
+#define MLKEM_INDCCA_PUBLICKEYBYTES (MLKEM_INDCPA_PUBLICKEYBYTES)
+/* 32 bytes of additional space to save H(pk) */
+#define MLKEM_INDCCA_SECRETKEYBYTES                            \
+  (MLKEM_INDCPA_SECRETKEYBYTES + MLKEM_INDCPA_PUBLICKEYBYTES + \
+   2 * MLKEM_SYMBYTES)
 
 #define MLK_INTERNAL_API
 #define MLK_INTERNAL_DATA_DECLARATION extern
 #define MLK_INTERNAL_DATA_DEFINITION
 #define MLK_EXTERNAL_API
-
-#define MLK_CONCAT_(x1, x2) x1##x2
-#define MLK_CONCAT(x1, x2) MLK_CONCAT_(x1, x2)
-
-#define MLK_ADD_PARAM_SET(s) MLK_CONCAT(s, MLK_CONFIG_PARAMETER_SET)
-
-#define MLK_NAMESPACE_PREFIX MLK_CONCAT(MLK_CONFIG_NAMESPACE_PREFIX, _)
-#define MLK_NAMESPACE_PREFIX_K \
-  MLK_CONCAT(MLK_ADD_PARAM_SET(MLK_CONFIG_NAMESPACE_PREFIX), _)
-
-/* Functions are prefixed by MLK_CONFIG_NAMESPACE_PREFIX.
- *
- * If multiple parameter sets are used, functions depending on the parameter
- * set are additionally prefixed with 512/768/1024. See mlkem_native_config.h.
- *
- * Example: If MLK_CONFIG_NAMESPACE_PREFIX is mlkem, then
- * MLK_NAMESPACE_K(enc) becomes mlkem512_enc/mlkem768_enc/mlkem1024_enc.
- */
-#define MLK_NAMESPACE(s) MLK_CONCAT(MLK_NAMESPACE_PREFIX, s)
-#define MLK_NAMESPACE_K(s) MLK_CONCAT(MLK_NAMESPACE_PREFIX_K, s)
 
 #define MLK_FIPS202_HEADER_FILE "fips202.h"
 

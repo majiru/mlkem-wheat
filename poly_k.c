@@ -22,11 +22,16 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "poly_k.h"
-
+#include "common.h"
 #include "debug.h"
-#include "sampling.h"
+#include "fips202.h"
 #include "symmetric.h"
+#include "poly.h"
+#include "sampling.h"
+#include "compress.h"
+#include "ns.h"
+#include "params.h"
+#include "poly_k.h"
 
 /* Parameter set namespacing
  * This is to facilitate building multiple instances

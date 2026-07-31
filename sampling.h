@@ -15,10 +15,6 @@
 #ifndef MLK_SAMPLING_H
 #define MLK_SAMPLING_H
 
-#include "common.h"
-#include "poly.h"
-
-#define mlk_poly_cbd2 MLK_NAMESPACE(poly_cbd2)
 /**
  * Given an array of uniformly random bytes, compute a polynomial with
  * coefficients distributed according to a centered binomial distribution
@@ -32,7 +28,6 @@
 MLK_INTERNAL_API
 void mlk_poly_cbd2(mlk_poly *r, const u8int buf[2 * MLKEM_N / 4]);
 
-#define mlk_poly_cbd3 MLK_NAMESPACE(poly_cbd3)
 /**
  * Given an array of uniformly random bytes, compute a polynomial with
  * coefficients distributed according to a centered binomial distribution
@@ -48,7 +43,6 @@ void mlk_poly_cbd2(mlk_poly *r, const u8int buf[2 * MLKEM_N / 4]);
 MLK_INTERNAL_API
 void mlk_poly_cbd3(mlk_poly *r, const u8int buf[3 * MLKEM_N / 4]);
 
-#define mlk_poly_rej_uniform MLK_NAMESPACE(poly_rej_uniform)
 /**
  * Generate a polynomial using rejection sampling on (pseudo-)uniformly
  * random bytes sampled from a seed.

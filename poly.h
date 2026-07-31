@@ -12,14 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_POLY_H
-#define MLK_POLY_H
-
-
-#include "common.h"
-#include "debug.h"
-#include "verify.h"
-
 /* Absolute exclusive upper bound for the output of the inverse NTT */
 #define MLK_INVNTT_BOUND (8 * MLKEM_Q)
 
@@ -88,7 +80,6 @@ static MLK_ALWAYS_INLINE s16int mlk_montgomery_reduce(s32int a)
   return (s16int)r;
 }
 
-#define mlk_poly_tomont MLK_NAMESPACE(poly_tomont)
 /**
  * In-place conversion of all coefficients of a polynomial from the normal
  * domain to the Montgomery domain.
@@ -104,7 +95,6 @@ static MLK_ALWAYS_INLINE s16int mlk_montgomery_reduce(s32int a)
 MLK_INTERNAL_API
 void mlk_poly_tomont(mlk_poly *r);
 
-#define mlk_poly_mulcache_compute MLK_NAMESPACE(poly_mulcache_compute)
 /**
  * Compute the mulcache for a polynomial in NTT domain.
  *
@@ -130,7 +120,6 @@ void mlk_poly_tomont(mlk_poly *r);
 MLK_INTERNAL_API
 void mlk_poly_mulcache_compute(mlk_poly_mulcache *x, const mlk_poly *a);
 
-#define mlk_poly_reduce MLK_NAMESPACE(poly_reduce)
 /**
  * Convert a polynomial to unsigned canonical representatives.
  *
@@ -152,7 +141,6 @@ void mlk_poly_mulcache_compute(mlk_poly_mulcache *x, const mlk_poly *a);
 MLK_INTERNAL_API
 void mlk_poly_reduce(mlk_poly *r);
 
-#define mlk_poly_add MLK_NAMESPACE(poly_add)
 /**
  * Add two polynomials in place.
  *
@@ -173,7 +161,6 @@ void mlk_poly_reduce(mlk_poly *r);
 MLK_INTERNAL_API
 void mlk_poly_add(mlk_poly *r, const mlk_poly *b);
 
-#define mlk_poly_sub MLK_NAMESPACE(poly_sub)
 /**
  * Subtract two polynomials; no modular reduction is performed.
  *
@@ -190,7 +177,6 @@ void mlk_poly_add(mlk_poly *r, const mlk_poly *b);
 MLK_INTERNAL_API
 void mlk_poly_sub(mlk_poly *r, const mlk_poly *b);
 
-#define mlk_poly_ntt MLK_NAMESPACE(poly_ntt)
 /**
  * Compute the negacyclic number-theoretic transform (NTT) of a polynomial
  * in place.
@@ -212,7 +198,6 @@ void mlk_poly_sub(mlk_poly *r, const mlk_poly *b);
 MLK_INTERNAL_API
 void mlk_poly_ntt(mlk_poly *r);
 
-#define mlk_poly_invntt_tomont MLK_NAMESPACE(poly_invntt_tomont)
 /**
  * Compute the inverse negacyclic number-theoretic transform (NTT) of a
  * polynomial in place; input assumed to be in bitreversed order, output in
@@ -233,5 +218,3 @@ void mlk_poly_ntt(mlk_poly *r);
  */
 MLK_INTERNAL_API
 void mlk_poly_invntt_tomont(mlk_poly *r);
-
-#endif /* !MLK_POLY_H */

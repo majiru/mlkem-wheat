@@ -20,28 +20,6 @@
 #ifndef MLK_KEM_H
 #define MLK_KEM_H
 
-#include "common.h"
-
-/* Include to ensure consistency between internal kem.h
- * and external mlkem_native.h. */
-#include "mlkem_native.h"
-
-#if MLKEM_INDCCA_SECRETKEYBYTES != \
-    MLKEM_SECRETKEYBYTES(MLK_CONFIG_PARAMETER_SET)
-#error Mismatch for SECRETKEYBYTES between kem.h and mlkem_native.h
-#endif
-
-#if MLKEM_INDCCA_PUBLICKEYBYTES != \
-    MLKEM_PUBLICKEYBYTES(MLK_CONFIG_PARAMETER_SET)
-#error Mismatch for PUBLICKEYBYTES between kem.h and mlkem_native.h
-#endif
-
-#if MLKEM_INDCCA_CIPHERTEXTBYTES != \
-    MLKEM_CIPHERTEXTBYTES(MLK_CONFIG_PARAMETER_SET)
-#error Mismatch for CIPHERTEXTBYTES between kem.h and mlkem_native.h
-#endif
-
-
 #define mlk_kem_keypair_derand \
   MLK_NAMESPACE_K(keypair_derand) MLK_CONTEXT_PARAMETERS_3
 #define mlk_kem_keypair MLK_NAMESPACE_K(keypair) MLK_CONTEXT_PARAMETERS_2

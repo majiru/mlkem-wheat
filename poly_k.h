@@ -12,13 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_POLY_K_H
-#define MLK_POLY_K_H
-
-#include "common.h"
-#include "compress.h"
-#include "poly.h"
-
 /* Parameter set namespacing
  * This is to facilitate building multiple instances
  * of mlkem-native (e.g. with varying parameter sets)
@@ -454,5 +447,3 @@ void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3);
 #endif /* MLKEM_K == 2 */
-
-#endif /* !MLK_POLY_K_H */

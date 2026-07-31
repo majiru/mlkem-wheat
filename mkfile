@@ -1,7 +1,7 @@
 </$objtype/mkfile
 
 LIB=mlkem.$objtype.a
-CFLAGS=-Fpw
+CFLAGS=-FTVw
 
 PORT=\
 	sampling.$O\
@@ -35,19 +35,19 @@ CLEANFILES=$OFILES $O512 $O768 $O1024 $LIB
 build/:
 	mkdir -p build/^(mlkem512 mlkem768 mlkem1024)
 
-$OFILES: build/
+$O512 $O768 $O1024: build/
 
-%.$O:	%.c
-	$CC -o $target $CFLAGS $stem.c
+main.$O: main.c
+	$CC -o $target -p $CFLAGS main.c
 
 build/mlkem512/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=512' $CFLAGS $stem.c
+	$CC -o $target -p '-DMLK_CONFIG_PARAMETER_SET=512' $CFLAGS $stem.c
 
 build/mlkem768/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=768' $CFLAGS $stem.c
+	$CC -o $target -p '-DMLK_CONFIG_PARAMETER_SET=768' $CFLAGS $stem.c
 
 build/mlkem1024/%.$O:	%.c
-	$CC -o $target '-DMLK_CONFIG_PARAMETER_SET=1024' $CFLAGS $stem.c
+	$CC -o $target -p '-DMLK_CONFIG_PARAMETER_SET=1024' $CFLAGS $stem.c
 
 
 $LIB:V:	$PORT $O512 $O768 $O1024 randombytes.$O

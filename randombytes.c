@@ -1,6 +1,5 @@
-#include <u.h>
-#include <libc.h>
-#include <libsec.h>
+#include "common.h"
+#include "randombytes.h"
 
 int
 randombytes(uchar *buf, ulong n)

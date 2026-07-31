@@ -33,23 +33,6 @@
 #define MLK_CONFIG_H
 
 /**
- * Specifies the parameter set for ML-KEM:
- *  - MLK_CONFIG_PARAMETER_SET=512 corresponds to ML-KEM-512
- *  - MLK_CONFIG_PARAMETER_SET=768 corresponds to ML-KEM-768
- *  - MLK_CONFIG_PARAMETER_SET=1024 corresponds to ML-KEM-1024
- *
- * If you want to support multiple parameter sets, build the library multiple
- * times and set MLK_CONFIG_MULTILEVEL_BUILD. See MLK_CONFIG_MULTILEVEL_BUILD
- * for how to do this while minimizing code duplication.
- *
- * This can also be set using CFLAGS.
- */
-#ifndef MLK_CONFIG_PARAMETER_SET
-#define MLK_CONFIG_PARAMETER_SET \
-  768 /* Change this for different security strengths */
-#endif
-
-/**
  * The prefix to use to namespace global symbols from mlkem/.
  *
  * In a multi-level build, level-dependent symbols will additionally be
@@ -116,13 +99,10 @@
  * This option only has an effect if MLK_CONFIG_KEYGEN_PCT is set.
  */
 /* #define MLK_CONFIG_KEYGEN_PCT_BREAKAGE_TEST
-   #if !defined(__ASSEMBLER__)
-   #include "src/sys.h"
    static MLK_INLINE int mlk_break_pct(void)
    {
        ... return 0/1 depending on whether PCT should be broken ...
    }
-   #endif
 */
 
 #endif /* MLK_BUILD_INTERNAL */

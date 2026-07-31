@@ -17,31 +17,18 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "indcpa.h"
-
+#include "common.h"
 #include "debug.h"
 #include "randombytes.h"
+#include "poly.h"
 #include "sampling.h"
+#include "fips202.h"
 #include "symmetric.h"
-
-/* Parameter set namespacing
- * This is to facilitate building multiple instances
- * of mlkem-native (e.g. with varying parameter sets)
- * within a single compilation unit. */
-#define mlk_pack_pk MLK_ADD_PARAM_SET(mlk_pack_pk)
-#define mlk_unpack_pk MLK_ADD_PARAM_SET(mlk_unpack_pk)
-#define mlk_pack_sk MLK_ADD_PARAM_SET(mlk_pack_sk)
-#define mlk_unpack_sk MLK_ADD_PARAM_SET(mlk_unpack_sk)
-#define mlk_pack_ciphertext MLK_ADD_PARAM_SET(mlk_pack_ciphertext)
-#define mlk_unpack_ciphertext MLK_ADD_PARAM_SET(mlk_unpack_ciphertext)
-#define mlk_matvec_mul MLK_ADD_PARAM_SET(mlk_matvec_mul)
-#define mlk_polyvec_permute_bitrev_to_custom \
-  MLK_ADD_PARAM_SET(mlk_polyvec_permute_bitrev_to_custom)
-#define mlk_polymat_permute_bitrev_to_custom \
-  MLK_ADD_PARAM_SET(mlk_polymat_permute_bitrev_to_custom)
-#define mlk_keypair_getnoise_eta1 MLK_ADD_PARAM_SET(mlk_keypair_getnoise_eta1)
-#define mlk_enc_getnoise_eta1_eta2 MLK_ADD_PARAM_SET(mlk_enc_getnoise_eta1_eta2)
-/* End of parameter set namespacing */
+#include "compress.h"
+#include "ns.h"
+#include "params.h"
+#include "poly_k.h"
+#include "indcpa.h"
 
 /**
  * Serialize the public key as the concatenation of the serialized vector of

@@ -12,12 +12,6 @@
  *   https://csrc.nist.gov/pubs/fips/203/final
  */
 
-#ifndef MLK_INDCPA_H
-#define MLK_INDCPA_H
-
-#include "common.h"
-#include "poly_k.h"
-
 #define mlk_gen_matrix MLK_NAMESPACE_K(gen_matrix)
 /**
  * Deterministically generate matrix A (or the transpose of A) from a seed.
@@ -123,5 +117,3 @@ int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int c[MLKEM_INDCPA_BYTES],
                    const u8int sk[MLKEM_INDCPA_SECRETKEYBYTES],
                    MLK_CONFIG_CONTEXT_PARAMETER_TYPE context);
-
-#endif /* !MLK_INDCPA_H */

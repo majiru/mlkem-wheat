@@ -2,11 +2,6 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
-#ifndef MLK_FIPS202_FIPS202_H
-#define MLK_FIPS202_FIPS202_H
-
-#include "common.h"
-
 #define SHAKE128_RATE 168
 #define SHAKE256_RATE 136
 #define SHA3_256_RATE 136
@@ -20,7 +15,6 @@ typedef struct
   XOFState x;
 } MLK_ALIGN mlk_shake128ctx;
 
-#define mlk_shake128_absorb_once MLK_NAMESPACE(shake128_absorb_once)
 /**
  * One-shot absorb step of the SHAKE128 XOF.
  *
@@ -41,7 +35,6 @@ typedef struct
 void mlk_shake128_absorb_once(mlk_shake128ctx *state, const u8int *input,
                               ulong inlen);
 
-#define mlk_shake128_squeezeblocks MLK_NAMESPACE(shake128_squeezeblocks)
 /**
  * Squeeze step of SHAKE128 XOF. Squeezes full blocks of SHAKE128_RATE bytes
  * each. Modifies the state. Can be called multiple times to keep squeezing,
@@ -54,15 +47,12 @@ void mlk_shake128_absorb_once(mlk_shake128ctx *state, const u8int *input,
 void mlk_shake128_squeezeblocks(u8int *output, ulong nblocks,
                                 mlk_shake128ctx *state);
 
-#define mlk_shake128_init MLK_NAMESPACE(shake128_init)
 void mlk_shake128_init(mlk_shake128ctx *state);
 
-#define mlk_shake128_release MLK_NAMESPACE(shake128_release)
 void mlk_shake128_release(mlk_shake128ctx *state);
 
 /* One-stop SHAKE256 call. Aliasing between input and
  * output is not permitted */
-#define mlk_shake256 MLK_NAMESPACE(shake256)
 /**
  * SHAKE256 XOF with non-incremental API.
  *
@@ -77,7 +67,6 @@ void mlk_shake256(u8int *output, ulong outlen, const u8int *input,
 /* One-stop SHA3_256 call. Aliasing between input and
  * output is not permitted */
 #define SHA3_256_HASHBYTES 32
-#define mlk_sha3_256 MLK_NAMESPACE(sha3_256)
 /**
  * SHA3-256 with non-incremental API.
  *
@@ -90,7 +79,6 @@ void mlk_sha3_256(u8int *output, const u8int *input, ulong inlen);
 /* One-stop SHA3_512 call. Aliasing between input and
  * output is not permitted */
 #define SHA3_512_HASHBYTES 64
-#define mlk_sha3_512 MLK_NAMESPACE(sha3_512)
 /**
  * SHA3-512 with non-incremental API.
  *
@@ -99,5 +87,3 @@ void mlk_sha3_256(u8int *output, const u8int *input, ulong inlen);
  * @param      inlen  Length of input in bytes.
  */
 void mlk_sha3_512(u8int *output, const u8int *input, ulong inlen);
-
-#endif /* !MLK_FIPS202_FIPS202_H */

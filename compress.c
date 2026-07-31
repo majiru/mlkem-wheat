@@ -18,9 +18,10 @@
  */
 
 #include "common.h"
-#include "compress.h"
 #include "debug.h"
 #include "verify.h"
+#include "poly.h"
+#include "compress.h"
 
 /* Reference: `poly_compress()` in the reference implementation @[REF],
  *            for ML-KEM-{512,768}.
@@ -332,9 +333,6 @@ MLK_INTERNAL_API
 void mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
 {
   unsigned i;
-#if (MLKEM_INDCPA_MSGBYTES != MLKEM_N / 8)
-#error "MLKEM_INDCPA_MSGBYTES must be equal to MLKEM_N/8 bytes!"
-#endif
 
   for (i = 0; i < MLKEM_N / 8; i++)
   {

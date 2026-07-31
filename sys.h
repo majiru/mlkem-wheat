@@ -2,9 +2,6 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
-#ifndef MLK_SYS_H
-#define MLK_SYS_H
-
 #define MLK_INLINE
 #define MLK_ALWAYS_INLINE MLK_INLINE
 
@@ -48,4 +45,3 @@
 
 #define MLK_MUST_CHECK_RETURN_VALUE
 
-#endif /* !MLK_SYS_H */

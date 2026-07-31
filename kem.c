@@ -23,12 +23,19 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#include "kem.h"
-
-#include "indcpa.h"
+#include "common.h"
 #include "randombytes.h"
+#include "fips202.h"
 #include "symmetric.h"
 #include "verify.h"
+#include "debug.h"
+#include "poly.h"
+#include "compress.h"
+#include "ns.h"
+#include "params.h"
+#include "poly_k.h"
+#include "indcpa.h"
+#include "kem.h"
 
 /* Parameter set namespacing
  * This is to facilitate building multiple instances

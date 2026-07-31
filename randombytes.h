@@ -2,12 +2,6 @@
  * Copyright (c) The mlkem-native project authors
  * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
  */
-#ifndef MLK_RANDOMBYTES_H
-#define MLK_RANDOMBYTES_H
-
-
-#include "common.h"
-
 /**
  * Fill a buffer with cryptographically secure random bytes.
  *
@@ -42,4 +36,3 @@ int randombytes(u8int *out, ulong outlen);
 MLK_MUST_CHECK_RETURN_VALUE
 static MLK_INLINE int mlk_randombytes(u8int *out, ulong outlen)
 { return randombytes(out, outlen); }
-#endif /* !MLK_RANDOMBYTES_H */

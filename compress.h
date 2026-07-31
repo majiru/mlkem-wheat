@@ -17,23 +17,10 @@
  *   https://github.com/pq-crystals/kyber/tree/main/ref
  */
 
-#ifndef MLK_COMPRESS_H
-#define MLK_COMPRESS_H
-
-
-#include "common.h"
-#include "debug.h"
-#include "poly.h"
-#include "verify.h"
-
 /*
  * The multiplication in this routine will exceed UINT32_MAX
  * and wrap around for large values of u. This is expected and required.
  */
-#ifdef CBMC
-#pragma CPROVER check push
-#pragma CPROVER check disable "unsigned-overflow"
-#endif
 
 /**
  * Compute round(u * 2 / MLKEM_Q).
@@ -60,18 +47,11 @@ static MLK_INLINE u8int mlk_scalar_compress_d1(s16int u)
   /* Unsigned shifting by 31 positions leaves only the top bit. */
   return (u8int)((d0 + ((u32int)1u << 30)) >> 31);
 }
-#ifdef CBMC
-#pragma CPROVER check pop
-#endif
 
 /*
  * The multiplication in this routine will exceed UINT32_MAX
  * and wrap around for large values of u. This is expected and required.
  */
-#ifdef CBMC
-#pragma CPROVER check push
-#pragma CPROVER check disable "unsigned-overflow"
-#endif
 
 /**
  * Compute round(u * 16 / MLKEM_Q) % 16.
@@ -99,9 +79,6 @@ static MLK_INLINE u8int mlk_scalar_compress_d4(s16int u)
   /* The return value is < 16, so not altered by the conversion to u8int. */
   return (u8int)((d0 + ((u32int)1u << 27)) >> 28); /* round(d0/2^28) */
 }
-#ifdef CBMC
-#pragma CPROVER check pop
-#endif
 
 /**
  * Compute round(u * MLKEM_Q / 16).
@@ -126,10 +103,6 @@ static MLK_INLINE s16int mlk_scalar_decompress_d4(u8int u)
  * The multiplication in this routine will exceed UINT32_MAX
  * and wrap around for large values of u. This is expected and required.
  */
-#ifdef CBMC
-#pragma CPROVER check push
-#pragma CPROVER check disable "unsigned-overflow"
-#endif
 
 /**
  * Compute round(u * 32 / MLKEM_Q) % 32.
@@ -157,9 +130,6 @@ static MLK_INLINE u8int mlk_scalar_compress_d5(s16int u)
   /* The return value is < 32, so not altered by the conversion to u8int. */
   return (u8int)((d0 + ((u32int)1u << 26)) >> 27); /* round(d0/2^27) */
 }
-#ifdef CBMC
-#pragma CPROVER check pop
-#endif
 
 /**
  * Compute round(u * MLKEM_Q / 32).
@@ -184,10 +154,6 @@ static MLK_INLINE s16int mlk_scalar_decompress_d5(u8int u)
  * The multiplication in this routine will exceed UINT32_MAX
  * and wrap around for large values of u. This is expected and required.
  */
-#ifdef CBMC
-#pragma CPROVER check push
-#pragma CPROVER check disable "unsigned-overflow"
-#endif
 
 /**
  * Compute round(u * 2**10 / MLKEM_Q) % 2**10.
@@ -215,9 +181,6 @@ static MLK_INLINE u16int mlk_scalar_compress_d10(s16int u)
   d0 = (d0 + ((u64int)1u << 32)) >> 33; /* round(d0/2^33) */
   return (d0 & 0x3FF);
 }
-#ifdef CBMC
-#pragma CPROVER check pop
-#endif
 
 /**
  * Compute round(u * MLKEM_Q / 1024).
@@ -289,7 +252,6 @@ static MLK_INLINE s16int mlk_scalar_decompress_d11(u16int u)
   return (s16int)((((u32int)u * MLKEM_Q) + 1024) >> 11);
 }
 
-#define mlk_poly_compress_d4 MLK_NAMESPACE(poly_compress_d4)
 /**
  * Compression (4 bits) and subsequent serialization of a polynomial.
  *
@@ -309,7 +271,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d4(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D4],
                           const mlk_poly *a);
 
-#define mlk_poly_compress_d10 MLK_NAMESPACE(poly_compress_d10)
 /**
  * Compression (10 bits) and subsequent serialization of a polynomial.
  *
@@ -329,7 +290,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d10(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D10],
                            const mlk_poly *a);
 
-#define mlk_poly_decompress_d4 MLK_NAMESPACE(poly_decompress_d4)
 /**
  * De-serialization and subsequent decompression (4 bits) of a polynomial;
  * approximate inverse of mlk_poly_compress_d4.
@@ -352,7 +312,6 @@ MLK_INTERNAL_API
 void mlk_poly_decompress_d4(mlk_poly *r,
                             const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D4]);
 
-#define mlk_poly_decompress_d10 MLK_NAMESPACE(poly_decompress_d10)
 /**
  * De-serialization and subsequent decompression (10 bits) of a polynomial;
  * approximate inverse of mlk_poly_compress_d10.
@@ -375,7 +334,6 @@ MLK_INTERNAL_API
 void mlk_poly_decompress_d10(mlk_poly *r,
                              const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D10]);
 
-#define mlk_poly_compress_d5 MLK_NAMESPACE(poly_compress_d5)
 /**
  * Compression (5 bits) and subsequent serialization of a polynomial.
  *
@@ -395,7 +353,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d5(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D5],
                           const mlk_poly *a);
 
-#define mlk_poly_compress_d11 MLK_NAMESPACE(poly_compress_d11)
 /**
  * Compression (11 bits) and subsequent serialization of a polynomial.
  *
@@ -415,7 +372,6 @@ MLK_INTERNAL_API
 void mlk_poly_compress_d11(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D11],
                            const mlk_poly *a);
 
-#define mlk_poly_decompress_d5 MLK_NAMESPACE(poly_decompress_d5)
 /**
  * De-serialization and subsequent decompression (5 bits) of a polynomial;
  * approximate inverse of mlk_poly_compress_d5.
@@ -438,7 +394,6 @@ MLK_INTERNAL_API
 void mlk_poly_decompress_d5(mlk_poly *r,
                             const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D5]);
 
-#define mlk_poly_decompress_d11 MLK_NAMESPACE(poly_decompress_d11)
 /**
  * De-serialization and subsequent decompression (11 bits) of a polynomial;
  * approximate inverse of mlk_poly_compress_d11.
@@ -461,7 +416,6 @@ MLK_INTERNAL_API
 void mlk_poly_decompress_d11(mlk_poly *r,
                              const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D11]);
 
-#define mlk_poly_tobytes MLK_NAMESPACE(poly_tobytes)
 /**
  * Serialization of a polynomial. Signed coefficients are converted to
  * unsigned form before serialization.
@@ -477,7 +431,6 @@ MLK_INTERNAL_API
 void mlk_poly_tobytes(u8int r[MLKEM_POLYBYTES], const mlk_poly *a);
 
 
-#define mlk_poly_frombytes MLK_NAMESPACE(poly_frombytes)
 /**
  * De-serialization of a polynomial.
  *
@@ -492,7 +445,6 @@ MLK_INTERNAL_API
 void mlk_poly_frombytes(mlk_poly *r, const u8int a[MLKEM_POLYBYTES]);
 
 
-#define mlk_poly_frommsg MLK_NAMESPACE(poly_frommsg)
 /**
  * Convert a 32-byte message to a polynomial.
  *
@@ -508,7 +460,6 @@ void mlk_poly_frombytes(mlk_poly *r, const u8int a[MLKEM_POLYBYTES]);
 MLK_INTERNAL_API
 void mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES]);
 
-#define mlk_poly_tomsg MLK_NAMESPACE(poly_tomsg)
 /**
  * Convert a polynomial to a 32-byte message.
  *
@@ -524,4 +475,3 @@ void mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES]);
 MLK_INTERNAL_API
 void mlk_poly_tomsg(u8int msg[MLKEM_INDCPA_MSGBYTES], const mlk_poly *r);
 
-#endif /* !MLK_COMPRESS_H */

@@ -1,3 +1,4 @@
+#include "common.h"
 #include "fips202.h"
 
 void
