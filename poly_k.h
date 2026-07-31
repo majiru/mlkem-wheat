@@ -1,17 +1,3 @@
-/*
- * Copyright (c) The mlkem-native project authors
- * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
- */
-
-/* References
- * ==========
- *
- * - [FIPS203]
- *   FIPS 203 Module-Lattice-Based Key-Encapsulation Mechanism Standard
- *   National Institute of Standards and Technology
- *   https://csrc.nist.gov/pubs/fips/203/final
- */
-
 /* Sized up to the max it can be for 1024 FIXME(?) */
 typedef struct
 {

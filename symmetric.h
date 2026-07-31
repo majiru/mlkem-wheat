@@ -1,17 +1,3 @@
-/*
- * Copyright (c) The mlkem-native project authors
- * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
- */
-
-/* References
- * ==========
- *
- * - [FIPS203]
- *   FIPS 203 Module-Lattice-Based Key-Encapsulation Mechanism Standard
- *   National Institute of Standards and Technology
- *   https://csrc.nist.gov/pubs/fips/203/final
- */
-
 /* Macros denoting FIPS 203 specific Hash functions */
 
 /* Hash function H, @[FIPS203, Section 4.1, Eq (4.4)] */

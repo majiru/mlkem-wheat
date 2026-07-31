@@ -1,22 +1,3 @@
-/*
- * Copyright (c) The mlkem-native project authors
- * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
- */
-
-/* References
- * ==========
- *
- * - [FIPS203]
- *   FIPS 203 Module-Lattice-Based Key-Encapsulation Mechanism Standard
- *   National Institute of Standards and Technology
- *   https://csrc.nist.gov/pubs/fips/203/final
- *
- * - [REF]
- *   CRYSTALS-Kyber C reference implementation
- *   Bos, Ducas, Kiltz, Lepoint, Lyubashevsky, Schanck, Schwabe, Seiler, Stehlé
- *   https://github.com/pq-crystals/kyber/tree/main/ref
- */
-
 int mlkem512_check_pk(const u8int pk[(((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES))]);
 int mlkem512_check_sk(const u8int sk[(((2 * MLKEM_POLYBYTES)) +((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES) + 2 * MLKEM_SYMBYTES)]);
 int mlkem512_keypair_derand(u8int pk[(((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES))],

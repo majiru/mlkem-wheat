@@ -1,17 +1,3 @@
-/*
- * Copyright (c) The mlkem-native project authors
- * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
- */
-
-/* References
- * ==========
- *
- * - [FIPS203]
- *   FIPS 203 Module-Lattice-Based Key-Encapsulation Mechanism Standard
- *   National Institute of Standards and Technology
- *   https://csrc.nist.gov/pubs/fips/203/final
- */
-
 void mlkem512_gen_matrix(mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES],
                     int transposed);
 int mlkem512_indcpa_keypair_derand(u8int pk[((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
