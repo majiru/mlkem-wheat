@@ -39,7 +39,7 @@ mlk_kem_check_pk(const u8int *pk, int n)
 	default:
 		abort();
 	}
-	return mlk_ct_memcmp(pk, p_reencoded, n) ? MLK_ERR_FAIL : 0;
+	return tsmemcmp(pk, p_reencoded, n) ? MLK_ERR_FAIL : 0;
 }
 
 static
@@ -49,7 +49,7 @@ int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
 
 	/*
 	 * The parts of `sk` being hashed and compared here are public, so
-	 * no public information is leaked through the runtime or the return value
+	 * no private information is leaked through the runtime or the return value
 	 * of this function.
 	 */
 
@@ -57,33 +57,25 @@ int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
 	return memcmp(sk + sn - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? MLK_ERR_FAIL : 0;
 }
 
-#include "params.h"
-
 static int
-mlk_kem_keypair_x(int level, u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
+mlk_kem_keypair_x(int level, u8int *pk, u8int *sk)
 {
 	int ret;
-	MLK_ALLOC(coins, u8int, 2 * MLKEM_SYMBYTES);
+	u8int coins[2 * MLKEM_SYMBYTES];
 
-	if(coins == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
-
-	/* Acquire necessary randomness, and mark it as secret. */
-	if(mlk_randombytes(coins, 2 * MLKEM_SYMBYTES) != 0){
+	if(mlk_randombytes(coins, sizeof coins) != 0){
 		ret = MLK_ERR_RNG_FAIL;
 		goto cleanup;
 	}
 
 	switch(level){
-	case 512:
+	case K512:
 		ret = mlkem512_indcpa_keypair_derand(pk, sk, coins);
 		break;
-	case 768:
+	case K768:
 		ret = mlkem768_indcpa_keypair_derand(pk, sk, coins);
 		break;
-	case 1024:
+	case K1024:
 		ret = mlkem1024_indcpa_keypair_derand(pk, sk, coins);
 		break;
 	default:
@@ -92,20 +84,22 @@ mlk_kem_keypair_x(int level, u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLK
 	if(ret != 0)
 		goto cleanup;
 
-	mlk_memcpy(sk + MLKEM_INDCPA_SECRETKEYBYTES, pk, MLKEM_INDCCA_PUBLICKEYBYTES);
-	mlk_hash_h(sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, pk, MLKEM_INDCCA_PUBLICKEYBYTES);
+	memcpy(sk + _MLKEM_INDCPA_SECRETKEYBYTES(level), pk, _MLKEM_INDCCA_PUBLICKEYBYTES(level));
+	mlk_hash_h(sk + _MLKEM_INDCCA_SECRETKEYBYTES(level) - 2 * MLKEM_SYMBYTES, pk, _MLKEM_INDCCA_PUBLICKEYBYTES(level));
 	/* Value z for pseudo-random output on reject */
-	mlk_memcpy(sk + MLKEM_INDCCA_SECRETKEYBYTES - MLKEM_SYMBYTES, coins + MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+	memcpy(sk + _MLKEM_INDCCA_SECRETKEYBYTES(level) - MLKEM_SYMBYTES, coins + MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 
 cleanup:
-	MLK_FREE(coins, u8int, 2 * MLKEM_SYMBYTES);
+	memset(coins, 0, sizeof coins);
 	if(ret != 0){
-		mlk_zeroize(pk, MLKEM_INDCCA_PUBLICKEYBYTES);
-		mlk_zeroize(sk, MLKEM_INDCCA_SECRETKEYBYTES);
+		memset(pk, 0, _MLKEM_INDCCA_PUBLICKEYBYTES(level));
+		memset(sk, 0, _MLKEM_INDCCA_SECRETKEYBYTES(level));
 	}
 
 	return ret;
 }
+
+#include "params.h"
 
 static int
 mlk_kem_enc_x(int level, u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_SSBYTES], const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
@@ -143,13 +137,13 @@ mlk_kem_enc_x(int level, u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_
 
 	/* coins are in kr+MLKEM_SYMBYTES */
 	switch(level){
-	case 512:
+	case K512:
 		ret = mlkem512_indcpa_enc(ct, buf, pk, kr + MLKEM_SYMBYTES);
 		break;
-	case 768:
+	case K768:
 		ret = mlkem768_indcpa_enc(ct, buf, pk, kr + MLKEM_SYMBYTES);
 		break;
-	case 1024:
+	case K1024:
 		ret = mlkem1024_indcpa_enc(ct, buf, pk, kr + MLKEM_SYMBYTES);
 		break;
 	default:
@@ -190,7 +184,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		goto cleanup;
 
 	switch(level){
-	case 512:
+	case K512:
 		ret = mlkem512_indcpa_dec(buf, ct, sk);
 		if(ret != 0)
 			goto cleanup;
@@ -205,7 +199,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		if(ret != 0)
 			goto cleanup;
 		break;
-	case 768:
+	case K768:
 		ret = mlkem768_indcpa_dec(buf, ct, sk);
 		if(ret != 0)
 			goto cleanup;
@@ -220,7 +214,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		if(ret != 0)
 			goto cleanup;
 		break;
-	case 1024:
+	case K1024:
 		ret = mlkem1024_indcpa_dec(buf, ct, sk);
 		if(ret != 0)
 			goto cleanup;
@@ -266,17 +260,17 @@ cleanup:
 int
 mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
 {
-	return mlk_kem_keypair_x(MLK_CONFIG_PARAMETER_SET, pk, sk);
+	return mlk_kem_keypair_x(MLKEM_K, pk, sk);
 }
 
 int
 mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_SSBYTES], const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
 {
-	return mlk_kem_enc_x(MLK_CONFIG_PARAMETER_SET, ct, ss, pk);
+	return mlk_kem_enc_x(MLKEM_K, ct, ss, pk);
 }
 
 int
 mlk_kem_dec(u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
 {
-	return mlk_kem_dec_x(MLK_CONFIG_PARAMETER_SET, ss, ct, sk);
+	return mlk_kem_dec_x(MLKEM_K, ss, ct, sk);
 }
