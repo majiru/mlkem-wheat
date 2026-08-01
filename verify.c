@@ -203,50 +203,6 @@ u8int mlk_ct_sel_uint8(u8int a, u8int b, u8int cond)
 }
 
 /**
- * Compare two arrays for equality in constant time.
- *
- * @spec{Used to securely compute conditional move in @[FIPS203, Algorithm
- * 18 (ML-KEM.Decaps_Internal, L9-11].}
- *
- * @reference{`cmov()` in the reference implementation @[REF]. We return
- * `u8int`, not `int`. We use an additional XOR-accumulator in the
- * comparison loop which prevents early abort if the OR-accumulator is 0xFF.
- * We use a value barrier to convert the OR-accumulator into a mask; the
- * reference implementation uses a shift which the compiler can argue to
- * result in either 0 or 0xFF..FF.}
- *
- * @param[in] a   First byte array.
- * @param[in] b   Second byte array.
- * @param     len Length of the byte arrays, upper-bounded to UINT16_MAX to
- *                control proof complexity only.
- *
- * @retval 0    The byte arrays are equal.
- * @retval 0xFF The byte arrays are not equal.
- */
-u8int mlk_ct_memcmp(const u8int *a, const u8int *b,
-                                        const ulong len)
-{
-  u8int r = 0, s = 0;
-  unsigned i;
-
-  for (i = 0; i < len; i++)
-  {
-    r |= a[i] ^ b[i];
-    /* s is useless, but prevents the loop from being aborted once r=0xff. */
-    s ^= a[i] ^ b[i];
-  }
-
-  /*
-   * - Convert r into a mask; this may not be necessary, but is an additional
-   *   safeguard
-   *   towards leaking information about a and b.
-   * - XOR twice with s, separated by a value barrier, to prevent the compile
-   *   from dropping the s computation in the loop.
-   */
-  return (mlk_value_barrier_u8(mlk_ct_cmask_nonzero_u8(r) ^ s) ^ s);
-}
-
-/**
  * Copy len bytes from x to r if b is zero; don't modify x if b is non-zero.
  * Assumes two's complement representation of negative integers. Runs in
  * constant time.
@@ -271,20 +227,4 @@ void mlk_ct_cmov_zero(u8int *r, const u8int *x,
   {
     r[i] = mlk_ct_sel_uint8(r[i], x[i], b);
   }
-}
-
-/**
- * Force-zeroize a buffer.
- *
- * @spec{Used to implement @[FIPS203, Section 3.3, Destruction of
- * intermediate values].}
- *
- * @reference{Not present in the reference implementation @[REF].}
- *
- * @param[out] ptr Buffer to be zeroed.
- * @param      len Number of bytes to be zeroed.
- */
-void mlk_zeroize(void *ptr, ulong len)
-{
-  memset(ptr, 0, len);
 }

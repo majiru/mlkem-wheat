@@ -61,6 +61,9 @@ enum{
 
 /***** verify.c  *****/
 
+#define mlk_ct_memcmp tsmemcmp
+#define mlk_zeroize(ptr, len) memset(ptr, 0, len)
+
 u64int mlk_ct_get_optblocker_u64(void);
 u8int mlk_ct_get_optblocker_u8(void);
 u32int mlk_ct_get_optblocker_u32(void);
@@ -76,9 +79,7 @@ u16int mlk_ct_cmask_nonzero_u16(u16int x);
 u8int mlk_ct_cmask_nonzero_u8(u8int x);
 s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond);
 u8int mlk_ct_sel_uint8(u8int a, u8int b, u8int cond);
-u8int mlk_ct_memcmp(const u8int *a, const u8int *b, const ulong len);
 void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, u8int b);
-void mlk_zeroize(void *ptr, ulong len);
 
 /***** randombytes.c  *****/
 
