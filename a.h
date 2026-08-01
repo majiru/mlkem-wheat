@@ -33,15 +33,15 @@
 /* Default: stack allocation */
 
 #define MLK_ALLOC(v, T, N) \
-  T mlk_alloc_##v[N];      \
-  T *v = mlk_alloc_##v
+  T *v = malloc(N * sizeof(T));
 
-#define MLK_FREE(v, T, N)                              \
-  do                                                   \
-  {                                                    \
-    memset(mlk_alloc_##v, 0, sizeof(mlk_alloc_##v));   \
-    (v) = nil;                                         \
-    USED((v));                                         \
+#define MLK_FREE(v, T, N)			\
+  do						\
+  {						\
+    memset(v, 0, N * sizeof(T));		\
+    free(v);					\
+    (v) = nil;					\
+    USED((v));					\
   } while (0)
 
 /* Generic failure condition */
