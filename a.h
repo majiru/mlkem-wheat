@@ -1,3 +1,9 @@
+enum{
+	K512 = 2,
+	K768,
+	K1024,
+};
+
 #define MLK_DEFAULT_ALIGN 32
 #define MLK_ALIGN_UP(N) \
   ((((N) + (MLK_DEFAULT_ALIGN - 1)) / MLK_DEFAULT_ALIGN) * MLK_DEFAULT_ALIGN)
