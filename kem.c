@@ -5,26 +5,33 @@
 
 #include "a.h"
 #include "fips202.h"
-#include "params.h"
+
+#define _MLKEM_POLYVECBYTES(lvl) (lvl * MLKEM_POLYBYTES)
+#define _MLKEM_INDCPA_PUBLICKEYBYTES(lvl) (_MLKEM_POLYVECBYTES(lvl) + MLKEM_SYMBYTES)
+#define _MLKEM_INDCPA_SECRETKEYBYTES(lvl) (_MLKEM_POLYVECBYTES(lvl))
+
+#define _MLKEM_INDCCA_PUBLICKEYBYTES(lvl) (_MLKEM_INDCPA_PUBLICKEYBYTES(lvl))
+/* 32 bytes of additional space to save H(pk) */
+#define _MLKEM_INDCCA_SECRETKEYBYTES(lvl) (_MLKEM_INDCPA_SECRETKEYBYTES(lvl) + _MLKEM_INDCPA_PUBLICKEYBYTES(lvl) + 2 * MLKEM_SYMBYTES)
 
 static int
 mlk_kem_check_pk(const u8int *pk, int n)
 {
 	mlk_polyvec p;
-	u8int p_reencoded[K1024 * MLKEM_POLYBYTES];
+	u8int p_reencoded[_MLKEM_POLYVECBYTES(K1024)];
 
 	switch(n){
-	case K512 * MLKEM_POLYBYTES:
+	case _MLKEM_POLYVECBYTES(K512):
 		mlkem512_polyvec_frombytes(&p, pk);
 		mlkem512_polyvec_reduce(&p);
 		mlkem512_polyvec_tobytes(p_reencoded, &p);
 		break;
-	case K768 * MLKEM_POLYBYTES:
+	case _MLKEM_POLYVECBYTES(K768):
 		mlkem768_polyvec_frombytes(&p, pk);
 		mlkem768_polyvec_reduce(&p);
 		mlkem768_polyvec_tobytes(p_reencoded, &p);
 		break;
-	case K1024 * MLKEM_POLYBYTES:
+	case _MLKEM_POLYVECBYTES(K1024):
 		mlkem1024_polyvec_frombytes(&p, pk);
 		mlkem1024_polyvec_reduce(&p);
 		mlkem1024_polyvec_tobytes(p_reencoded, &p);
@@ -36,15 +43,9 @@ mlk_kem_check_pk(const u8int *pk, int n)
 }
 
 static
-int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
+int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
 {
-	int ret;
-	MLK_ALLOC(test, u8int, MLKEM_SYMBYTES);
-
-	if(test == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
+	u8int test[MLKEM_SYMBYTES];
 
 	/*
 	 * The parts of `sk` being hashed and compared here are public, so
@@ -52,76 +53,11 @@ int mlk_kem_check_sk(const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
 	 * of this function.
 	 */
 
-	mlk_hash_h(test, sk + MLKEM_INDCPA_SECRETKEYBYTES, MLKEM_INDCCA_PUBLICKEYBYTES);
-	/* This doesn't have to be a constant-time memcmp, but it's the only place
-	 * in the library where a normal memcmp would be used otherwise, so for sake
-	 * of minimizing stdlib dependency, we use our constant-time one anyway. */
-	ret = mlk_ct_memcmp(sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? MLK_ERR_FAIL : 0;
-
-cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	MLK_FREE(test, u8int, MLKEM_SYMBYTES);
-	return ret;
+	mlk_hash_h(test, sk + sn, pn);
+	return memcmp(sk + sn - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? MLK_ERR_FAIL : 0;
 }
 
-#if defined(MLK_CONFIG_KEYGEN_PCT)
-/* Specification:
- * Partially implements 'Pairwise Consistency Test' @[FIPS140_3_IG, p.87] and
- * @[FIPS203, Section 7.1, Pairwise Consistency]. */
-
-/* Reference: Not implemented in the reference implementation @[REF]. */
-static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int const sk[MLKEM_INDCCA_SECRETKEYBYTES])
-{
-	int ret = 0;
-	MLK_ALLOC(ct, u8int, MLKEM_INDCCA_CIPHERTEXTBYTES);
-	MLK_ALLOC(ss_enc, u8int, MLKEM_SSBYTES);
-	MLK_ALLOC(ss_dec, u8int, MLKEM_SSBYTES);
-
-	if (ct == nil || ss_enc == nil || ss_dec == nil)
-	{
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
-
-	ret = mlk_kem_enc(ct, ss_enc, pk);
-	if (ret != 0)
-		goto cleanup;
-
-	ret = mlk_kem_dec(ss_dec, ct, sk);
-	if (ret != 0)
-		goto cleanup;
-
-#if defined(MLK_CONFIG_KEYGEN_PCT_BREAKAGE_TEST)
-	/* Deliberately break PCT for testing purposes */
-	if (mlk_break_pct())
-	{
-		ss_enc[0] = ~ss_enc[0];
-	}
-#endif /* MLK_CONFIG_KEYGEN_PCT_BREAKAGE_TEST */
-
-	ret = mlk_ct_memcmp(ss_enc, ss_dec, MLKEM_SSBYTES);
-
-	if (ret != 0)
-		ret = MLK_ERR_FAIL;
-
-cleanup:
-
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	MLK_FREE(ss_dec, u8int, MLKEM_SSBYTES);
-	MLK_FREE(ss_enc, u8int, MLKEM_SSBYTES);
-	MLK_FREE(ct, u8int, MLKEM_INDCCA_CIPHERTEXTBYTES);
-	return ret;
-}
-#else /* MLK_CONFIG_KEYGEN_PCT */
-static int mlk_check_pct(u8int const pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int const sk[MLKEM_INDCCA_SECRETKEYBYTES])
-{
-	USED(pk);
-	USED(sk);
-	return 0;
-}
-#endif /* !MLK_CONFIG_KEYGEN_PCT */
+#include "params.h"
 
 static int
 mlk_kem_keypair_x(int level, u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
@@ -160,11 +96,6 @@ mlk_kem_keypair_x(int level, u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLK
 	mlk_hash_h(sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, pk, MLKEM_INDCCA_PUBLICKEYBYTES);
 	/* Value z for pseudo-random output on reject */
 	mlk_memcpy(sk + MLKEM_INDCCA_SECRETKEYBYTES - MLKEM_SYMBYTES, coins + MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-
-	/* Pairwise Consistency Test (PCT) @[FIPS140_3_IG, p.87] */
-	ret = mlk_check_pct(pk, sk);
-	if(ret != 0)
-		goto cleanup;
 
 cleanup:
 	MLK_FREE(coins, u8int, 2 * MLKEM_SYMBYTES);
@@ -254,7 +185,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 	}
 
 	/* Specification: Implements @[FIPS203, Section 7.3, Hash check] */
-	ret = mlk_kem_check_sk(sk);
+	ret = mlk_kem_check_sk(sk, MLKEM_INDCCA_SECRETKEYBYTES, MLKEM_INDCCA_PUBLICKEYBYTES);
 	if(ret != 0)
 		goto cleanup;
 
