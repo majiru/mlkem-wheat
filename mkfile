@@ -9,10 +9,10 @@ PORT=\
 	compress.$O\
 	fips202-plan9.$O\
 	poly.$O\
+	kem.$O\
 
 BASEFILES=\
 	indcpa.$O\
-	kem.$O\
 	poly_k.$O\
 
 O512=\

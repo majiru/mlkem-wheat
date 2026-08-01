@@ -14,6 +14,13 @@
 /* 32 bytes of additional space to save H(pk) */
 #define _MLKEM_INDCCA_SECRETKEYBYTES(lvl) (_MLKEM_INDCPA_SECRETKEYBYTES(lvl) + _MLKEM_INDCPA_PUBLICKEYBYTES(lvl) + 2 * MLKEM_SYMBYTES)
 
+#define _MLKEM512_INDCPA_BYTES (MLKEM_POLYCOMPRESSEDBYTES_D4 + MLKEM_POLYCOMPRESSEDBYTES_D10 * K512)
+#define _MLKEM768_INDCPA_BYTES (MLKEM_POLYCOMPRESSEDBYTES_D4 + MLKEM_POLYCOMPRESSEDBYTES_D10 * K768)
+#define _MLKEM1024_INDCPA_BYTES (MLKEM_POLYCOMPRESSEDBYTES_D5 + MLKEM_POLYCOMPRESSEDBYTES_D11 * K1024)
+#define _MLKEM512_INDCCA_CIPHERTEXTBYTES (_MLKEM512_INDCPA_BYTES)
+#define _MLKEM768_INDCCA_CIPHERTEXTBYTES (_MLKEM768_INDCPA_BYTES)
+#define _MLKEM1024_INDCCA_CIPHERTEXTBYTES (_MLKEM1024_INDCPA_BYTES)
+
 static int
 mlk_kem_check_pk(const u8int *pk, int n)
 {
@@ -99,40 +106,28 @@ cleanup:
 	return ret;
 }
 
-#include "params.h"
-
 static int
-mlk_kem_enc_x(int level, u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_SSBYTES], const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
+mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk)
 {
 	int ret;
-	MLK_ALLOC(coins, u8int, MLKEM_SYMBYTES);
-	MLK_ALLOC(buf, u8int, 2 * MLKEM_SYMBYTES);
-	MLK_ALLOC(kr, u8int, 2 * MLKEM_SYMBYTES);
-
-	if(coins == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
+	u8int coins[MLKEM_SYMBYTES];
+	u8int buf[2 * MLKEM_SYMBYTES];
+	u8int kr[2 * MLKEM_SYMBYTES];
 
 	if(mlk_randombytes(coins, MLKEM_SYMBYTES) != 0){
 		ret = MLK_ERR_RNG_FAIL;
 		goto cleanup;
 	}
 
-	if(buf == nil || kr == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
-
 	/* Specification: Implements @[FIPS203, Section 7.2, Modulus check] */
-	ret = mlk_kem_check_pk(pk, MLKEM_POLYVECBYTES);
+	ret = mlk_kem_check_pk(pk, _MLKEM_POLYVECBYTES(level));
 	if(ret != 0)
 		goto cleanup;
 
-	mlk_memcpy(buf, coins, MLKEM_SYMBYTES);
+	memcpy(buf, coins, MLKEM_SYMBYTES);
 
 	/* Multitarget countermeasure for coins + contributory KEM */
-	mlk_hash_h(buf + MLKEM_SYMBYTES, pk, MLKEM_INDCCA_PUBLICKEYBYTES);
+	mlk_hash_h(buf + MLKEM_SYMBYTES, pk, _MLKEM_INDCCA_PUBLICKEYBYTES(level));
 	mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
 
 	/* coins are in kr+MLKEM_SYMBYTES */
@@ -152,34 +147,29 @@ mlk_kem_enc_x(int level, u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_
 	if(ret != 0)
 		goto cleanup;
 
-	mlk_memcpy(ss, kr, MLKEM_SYMBYTES);
+	memcpy(ss, kr, MLKEM_SYMBYTES);
 
 cleanup:
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	MLK_FREE(coins, u8int, MLKEM_SYMBYTES);
-	MLK_FREE(kr, u8int, 2 * MLKEM_SYMBYTES);
-	MLK_FREE(buf, u8int, 2 * MLKEM_SYMBYTES);
+	memset(coins, 0, sizeof coins);
+	memset(kr, 0, sizeof buf);
+	memset(buf, 0, sizeof buf);
 	return ret;
 }
 
 static int
-mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
+mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 {
 	int ret;
 	u8int fail;
-	const u8int *pk = sk + MLKEM_INDCPA_SECRETKEYBYTES;
-	MLK_ALLOC(buf, u8int, 2 * MLKEM_SYMBYTES);
-	MLK_ALLOC(kr, u8int, 2 * MLKEM_SYMBYTES);
-	MLK_ALLOC(tmp, u8int, MLKEM_SYMBYTES + MLKEM_INDCCA_CIPHERTEXTBYTES);
-
-	if(buf == nil || kr == nil || tmp == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
-		goto cleanup;
-	}
+	const u8int *pk = sk + _MLKEM_INDCPA_SECRETKEYBYTES(level);
+	u8int buf[2 * MLKEM_SYMBYTES];
+	u8int kr[2 * MLKEM_SYMBYTES];
+	u8int tmp[MLKEM_SYMBYTES + _MLKEM1024_INDCCA_CIPHERTEXTBYTES];
 
 	/* Specification: Implements @[FIPS203, Section 7.3, Hash check] */
-	ret = mlk_kem_check_sk(sk, MLKEM_INDCCA_SECRETKEYBYTES, MLKEM_INDCCA_PUBLICKEYBYTES);
+	ret = mlk_kem_check_sk(sk, _MLKEM_INDCCA_SECRETKEYBYTES(level), _MLKEM_INDCCA_PUBLICKEYBYTES(level));
 	if(ret != 0)
 		goto cleanup;
 
@@ -190,7 +180,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 			goto cleanup;
 
 		/* Multitarget countermeasure for coins + contributory KEM */
-		mlk_memcpy(buf + MLKEM_SYMBYTES, sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K512) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
 
 		/* Recompute and compare ciphertext */
@@ -198,6 +188,11 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		ret = mlkem512_indcpa_enc(tmp, buf, pk, kr + MLKEM_SYMBYTES);
 		if(ret != 0)
 			goto cleanup;
+		fail = mlk_ct_memcmp(ct, tmp, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
+		/* Compute rejection key */
+		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K512) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
+		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K768:
 		ret = mlkem768_indcpa_dec(buf, ct, sk);
@@ -205,7 +200,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 			goto cleanup;
 
 		/* Multitarget countermeasure for coins + contributory KEM */
-		mlk_memcpy(buf + MLKEM_SYMBYTES, sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K768) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
 
 		/* Recompute and compare ciphertext */
@@ -213,6 +208,11 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		ret = mlkem768_indcpa_enc(tmp, buf, pk, kr + MLKEM_SYMBYTES);
 		if(ret != 0)
 			goto cleanup;
+		fail = mlk_ct_memcmp(ct, tmp, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
+		/* Compute rejection key */
+		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K768) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
+		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K1024:
 		ret = mlkem1024_indcpa_dec(buf, ct, sk);
@@ -220,7 +220,7 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 			goto cleanup;
 
 		/* Multitarget countermeasure for coins + contributory KEM */
-		mlk_memcpy(buf + MLKEM_SYMBYTES, sk + MLKEM_INDCCA_SECRETKEYBYTES - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K1024) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
 
 		/* Recompute and compare ciphertext */
@@ -228,49 +228,79 @@ mlk_kem_dec_x(int level, u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CI
 		ret = mlkem1024_indcpa_enc(tmp, buf, pk, kr + MLKEM_SYMBYTES);
 		if(ret != 0)
 			goto cleanup;
+		fail = mlk_ct_memcmp(ct, tmp, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
+		/* Compute rejection key */
+		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K1024) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
+		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
 		break;
 	default:
 		abort();
 	}
 
-	fail = mlk_ct_memcmp(ct, tmp, MLKEM_INDCCA_CIPHERTEXTBYTES);
-
-	/* Compute rejection key */
-	mlk_memcpy(tmp, sk + MLKEM_INDCCA_SECRETKEYBYTES - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-	mlk_memcpy(tmp + MLKEM_SYMBYTES, ct, MLKEM_INDCCA_CIPHERTEXTBYTES);
-	mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + MLKEM_INDCCA_CIPHERTEXTBYTES);
-
-	/* Copy true key to return buffer if fail is 0 */
-	mlk_ct_cmov_zero(ss, kr, MLKEM_SYMBYTES, fail);
+	if(fail == 0)
+		memcpy(ss, kr, MLKEM_SYMBYTES);
 
 cleanup:
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	MLK_FREE(tmp, u8int, MLKEM_SYMBYTES + MLKEM_INDCCA_CIPHERTEXTBYTES);
-	MLK_FREE(kr, u8int, 2 * MLKEM_SYMBYTES);
-	MLK_FREE(buf, u8int, 2 * MLKEM_SYMBYTES);
+	memset(tmp, 0, sizeof tmp);
+	memset(kr, 0, sizeof kr);
+	memset(buf, 0, sizeof buf);
 
 	return ret;
 }
 
-#define mlk_kem_keypair MLK_NAMESPACE_K(keypair)
-#define mlk_kem_enc MLK_NAMESPACE_K(enc)
-#define mlk_kem_dec MLK_NAMESPACE_K(dec)
-
 int
-mlk_kem_keypair(u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES], u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
+mlkem512_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_keypair_x(MLKEM_K, pk, sk);
+	return mlk_kem_keypair_x(K512, pk, sk);
 }
 
 int
-mlk_kem_enc(u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], u8int ss[MLKEM_SSBYTES], const u8int pk[MLKEM_INDCCA_PUBLICKEYBYTES])
+mlkem768_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_enc_x(MLKEM_K, ct, ss, pk);
+	return mlk_kem_keypair_x(K768, pk, sk);
 }
 
 int
-mlk_kem_dec(u8int ss[MLKEM_SSBYTES], const u8int ct[MLKEM_INDCCA_CIPHERTEXTBYTES], const u8int sk[MLKEM_INDCCA_SECRETKEYBYTES])
+mlkem1024_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_dec_x(MLKEM_K, ss, ct, sk);
+	return mlk_kem_keypair_x(K1024, pk, sk);
+}
+
+int
+mlkem512_enc(u8int *ct, u8int *ss, const u8int *pk)
+{
+	return mlk_kem_enc_x(K512, ct, ss, pk);
+}
+
+int
+mlkem768_enc(u8int *ct, u8int *ss, const u8int *pk)
+{
+	return mlk_kem_enc_x(K768, ct, ss, pk);
+}
+
+int
+mlkem1024_enc(u8int *ct, u8int *ss, const u8int *pk)
+{
+	return mlk_kem_enc_x(K1024, ct, ss, pk);
+}
+
+int
+mlkem512_dec(u8int *ss, const u8int *ct, const u8int *sk)
+{
+	return mlk_kem_dec_x(K512, ss, ct, sk);
+}
+
+int
+mlkem768_dec(u8int *ss, const u8int *ct, const u8int *sk)
+{
+	return mlk_kem_dec_x(K768, ss, ct, sk);
+}
+
+int
+mlkem1024_dec(u8int *ss, const u8int *ct, const u8int *sk)
+{
+	return mlk_kem_dec_x(K1024, ss, ct, sk);
 }

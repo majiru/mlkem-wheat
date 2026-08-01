@@ -201,30 +201,3 @@ u8int mlk_ct_sel_uint8(u8int a, u8int b, u8int cond)
 {
   return b ^ (mlk_ct_cmask_nonzero_u8(cond) & (a ^ b));
 }
-
-/**
- * Copy len bytes from x to r if b is zero; don't modify x if b is non-zero.
- * Assumes two's complement representation of negative integers. Runs in
- * constant time.
- *
- * @spec{Used to securely compute conditional move in @[FIPS203, Algorithm
- * 18 (ML-KEM.Decaps_Internal, L9-11].}
- *
- * @reference{`cmov()` in the reference implementation @[REF]. We move if
- * condition value is `0`, not `1`. We use `mlk_ct_sel_uint8` for
- * constant-time selection.}
- *
- * @param[out] r   Output byte array.
- * @param[in]  x   Input byte array.
- * @param      len Number of bytes to be copied.
- * @param      b   Condition value.
- */
-void mlk_ct_cmov_zero(u8int *r, const u8int *x,
-                                        ulong len, u8int b)
-{
-  ulong i;
-  for (i = 0; i < len; i++)
-  {
-    r[i] = mlk_ct_sel_uint8(r[i], x[i], b);
-  }
-}

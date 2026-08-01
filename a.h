@@ -79,7 +79,6 @@ u16int mlk_ct_cmask_nonzero_u16(u16int x);
 u8int mlk_ct_cmask_nonzero_u8(u8int x);
 s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond);
 u8int mlk_ct_sel_uint8(u8int a, u8int b, u8int cond);
-void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, u8int b);
 
 /***** randombytes.c  *****/
 
