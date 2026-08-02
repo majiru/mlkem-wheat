@@ -29,19 +29,19 @@ mlk_kem_check_pk(const u8int *pk, int n)
 
 	switch(n){
 	case _MLKEM_POLYVECBYTES(K512):
-		mlkem512_polyvec_frombytes(&p, pk);
+		mlk_polyvec_frombytes(K512, &p, pk);
 		mlkem512_polyvec_reduce(&p);
-		mlkem512_polyvec_tobytes(p_reencoded, &p);
+		mlk_polyvec_tobytes(K768, p_reencoded, &p);
 		break;
 	case _MLKEM_POLYVECBYTES(K768):
-		mlkem768_polyvec_frombytes(&p, pk);
+		mlk_polyvec_frombytes(K768, &p, pk);
 		mlkem768_polyvec_reduce(&p);
-		mlkem768_polyvec_tobytes(p_reencoded, &p);
+		mlk_polyvec_tobytes(K768, p_reencoded, &p);
 		break;
 	case _MLKEM_POLYVECBYTES(K1024):
-		mlkem1024_polyvec_frombytes(&p, pk);
+		mlk_polyvec_frombytes(K1024, &p, pk);
 		mlkem1024_polyvec_reduce(&p);
-		mlkem1024_polyvec_tobytes(p_reencoded, &p);
+		mlk_polyvec_tobytes(K1024, p_reencoded, &p);
 		break;
 	default:
 		abort();

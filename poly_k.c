@@ -31,6 +31,9 @@
 #include "fips202.h"
 
 #if MLK_CONFIG_PARAMETER_SET == 512
+
+#define _MLKEM_POLYVECBYTES(lvl) (lvl * MLKEM_POLYBYTES)
+
 /* Reference: `polyvec_compress()` in the reference implementation @[REF]
  *            - In contrast to the reference implementation, we assume
  *              unsigned canonical coefficients here.
@@ -62,23 +65,6 @@ void mlk_polyvec_decompress_du(int level, mlk_polyvec *r, const u8int *a)
       mlk_poly_decompress_d10(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_D10);
   }
 }
-#endif
-
-#include "params.h"
-
-#define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
-#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
-#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
-#define mlk_polyvec_ntt MLK_NAMESPACE_K(polyvec_ntt)
-#define mlk_polyvec_invntt_tomont MLK_NAMESPACE_K(polyvec_invntt_tomont)
-#define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
-#define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
-#define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
-#define mlk_polyvec_tomont MLK_NAMESPACE_K(polyvec_tomont)
-#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
-#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
-#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
 
 /* Reference: `polyvec_tobytes()` in the reference implementation @[REF].
  *            - In contrast to the reference implementation, we assume
@@ -86,11 +72,11 @@ void mlk_polyvec_decompress_du(int level, mlk_polyvec *r, const u8int *a)
  *              The reference implementation works with coefficients
  *              in the range [-(MLKEM_Q-1), MLKEM_Q-1]. */
 MLK_INTERNAL_API
-void mlk_polyvec_tobytes(u8int r[MLKEM_POLYVECBYTES], const mlk_polyvec *a)
+void mlk_polyvec_tobytes(int level, u8int *r, const mlk_polyvec *a)
 {
   unsigned i;
 
-  for (i = 0; i < MLKEM_K; i++)
+  for (i = 0; i < level; i++)
   {
     mlk_poly_tobytes(&r[i * MLKEM_POLYBYTES], &a->vec[i]);
   }
@@ -98,10 +84,10 @@ void mlk_polyvec_tobytes(u8int r[MLKEM_POLYVECBYTES], const mlk_polyvec *a)
 
 /* Reference: `polyvec_frombytes()` in the reference implementation @[REF]. */
 MLK_INTERNAL_API
-void mlk_polyvec_frombytes(mlk_polyvec *r, const u8int a[MLKEM_POLYVECBYTES])
+void mlk_polyvec_frombytes(int level, mlk_polyvec *r, const u8int *a)
 {
   unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
+  for (i = 0; i < level; i++)
   {
     mlk_poly_frombytes(&r->vec[i], a + i * MLKEM_POLYBYTES);
   }
@@ -110,10 +96,10 @@ void mlk_polyvec_frombytes(mlk_polyvec *r, const u8int a[MLKEM_POLYVECBYTES])
 
 /* Reference: `polyvec_ntt()` in the reference implementation @[REF]. */
 MLK_INTERNAL_API
-void mlk_polyvec_ntt(mlk_polyvec *r)
+void mlk_polyvec_ntt(int level, mlk_polyvec *r)
 {
   unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
+  for (i = 0; i < level; i++)
   {
     mlk_poly_ntt(&r->vec[i]);
   }
@@ -126,15 +112,38 @@ void mlk_polyvec_ntt(mlk_polyvec *r)
  *              the end. This allows us to drop a call to `poly_reduce()`
  *              from the base multiplication. */
 MLK_INTERNAL_API
-void mlk_polyvec_invntt_tomont(mlk_polyvec *r)
+void mlk_polyvec_invntt_tomont(int level, mlk_polyvec *r)
 {
   unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
+  for (i = 0; i < level; i++)
   {
     mlk_poly_invntt_tomont(&r->vec[i]);
   }
 
 }
+
+/* Reference: `polyvec_tomont()` in the reference implementation @[REF]. */
+MLK_INTERNAL_API
+void mlk_polyvec_tomont(int level, mlk_polyvec *r)
+{
+  unsigned i;
+  for (i = 0; i < level; i++)
+  {
+    mlk_poly_tomont(&r->vec[i]);
+  }
+
+}
+#endif
+
+#include "params.h"
+
+#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
+#define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
+#define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
+#define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
+#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
+#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
+#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 
 /* Reference: `polyvec_basemul_acc_montgomery()` in the
  *            reference implementation @[REF].
@@ -212,18 +221,6 @@ void mlk_polyvec_add(mlk_polyvec *r, const mlk_polyvec *b)
   {
     mlk_poly_add(&r->vec[i], &b->vec[i]);
   }
-}
-
-/* Reference: `polyvec_tomont()` in the reference implementation @[REF]. */
-MLK_INTERNAL_API
-void mlk_polyvec_tomont(mlk_polyvec *r)
-{
-  unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_tomont(&r->vec[i]);
-  }
-
 }
 
 

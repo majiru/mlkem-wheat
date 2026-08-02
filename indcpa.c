@@ -26,15 +26,10 @@
 #include "fips202.h"
 #include "params.h"
 
-#define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
-#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
 #define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
-#define mlk_polyvec_ntt MLK_NAMESPACE_K(polyvec_ntt)
-#define mlk_polyvec_invntt_tomont MLK_NAMESPACE_K(polyvec_invntt_tomont)
 #define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
 #define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
 #define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
-#define mlk_polyvec_tomont MLK_NAMESPACE_K(polyvec_tomont)
 #define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
 #define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
@@ -58,7 +53,7 @@ static void mlk_pack_pk(u8int r[MLKEM_INDCPA_PUBLICKEYBYTES],
                         const mlk_polyvec *pk,
                         const u8int seed[MLKEM_SYMBYTES])
 {
-  mlk_polyvec_tobytes(r, pk);
+  mlk_polyvec_tobytes(MLKEM_K, r, pk);
   mlk_memcpy(r + MLKEM_POLYVECBYTES, seed, MLKEM_SYMBYTES);
 }
 
@@ -76,7 +71,7 @@ static void mlk_pack_pk(u8int r[MLKEM_INDCPA_PUBLICKEYBYTES],
 static void mlk_unpack_pk(mlk_polyvec *pk, u8int seed[MLKEM_SYMBYTES],
                           const u8int packedpk[MLKEM_INDCPA_PUBLICKEYBYTES])
 {
-  mlk_polyvec_frombytes(pk, packedpk);
+  mlk_polyvec_frombytes(MLKEM_K, pk, packedpk);
   mlk_memcpy(seed, packedpk + MLKEM_POLYVECBYTES, MLKEM_SYMBYTES);
 
   /* NOTE: If a modulus check was conducted on the PK, we know at this
@@ -96,7 +91,7 @@ static void mlk_unpack_pk(mlk_polyvec *pk, u8int seed[MLKEM_SYMBYTES],
 static void mlk_pack_sk(u8int r[MLKEM_INDCPA_SECRETKEYBYTES],
                         const mlk_polyvec *sk)
 {
-  mlk_polyvec_tobytes(r, sk);
+  mlk_polyvec_tobytes(MLKEM_K, r, sk);
 }
 
 /**
@@ -110,7 +105,7 @@ static void mlk_pack_sk(u8int r[MLKEM_INDCPA_SECRETKEYBYTES],
 static void mlk_unpack_sk(mlk_polyvec *sk,
                           const u8int packedsk[MLKEM_INDCPA_SECRETKEYBYTES])
 {
-  mlk_polyvec_frombytes(sk, packedsk);
+  mlk_polyvec_frombytes(MLKEM_K, sk, packedsk);
 }
 
 /**
@@ -372,12 +367,12 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
 
   mlk_keypair_getnoise_eta1(skpv, e, noiseseed);
 
-  mlk_polyvec_ntt(skpv);
-  mlk_polyvec_ntt(e);
+  mlk_polyvec_ntt(MLKEM_K, skpv);
+  mlk_polyvec_ntt(MLKEM_K, e);
 
   mlk_polyvec_mulcache_compute(skpv_cache, skpv);
   mlk_matvec_mul(pkpv, a, skpv, skpv_cache);
-  mlk_polyvec_tomont(pkpv);
+  mlk_polyvec_tomont(MLKEM_K, pkpv);
 
   mlk_polyvec_add(pkpv, e);
   mlk_polyvec_reduce(pkpv);
@@ -439,13 +434,13 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
 
   mlk_enc_getnoise_eta1_eta2(sp, ep, epp, coins);
 
-  mlk_polyvec_ntt(sp);
+  mlk_polyvec_ntt(MLKEM_K, sp);
 
   mlk_polyvec_mulcache_compute(sp_cache, sp);
   mlk_matvec_mul(b, at, sp, sp_cache);
   mlk_polyvec_basemul_acc_montgomery_cached(v, pkpv, sp, sp_cache);
 
-  mlk_polyvec_invntt_tomont(b);
+  mlk_polyvec_invntt_tomont(MLKEM_K, b);
   mlk_poly_invntt_tomont(v);
 
   mlk_polyvec_add(b, ep);
@@ -497,7 +492,7 @@ int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
   mlk_unpack_ciphertext(b, v, c);
   mlk_unpack_sk(skpv, sk);
 
-  mlk_polyvec_ntt(b);
+  mlk_polyvec_ntt(MLKEM_K, b);
   mlk_polyvec_mulcache_compute(b_cache, b);
   mlk_polyvec_basemul_acc_montgomery_cached(sb, skpv, b, b_cache);
   mlk_poly_invntt_tomont(sb);
