@@ -211,52 +211,18 @@ MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(int level,
     r->coeffs[2 * i + 1] = mlk_montgomery_reduce(t[1]);
   }
 }
-#endif
-
-#include "params.h"
-
-#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
-#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
-#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-
-
-/**
- * Given an array of uniformly random bytes, compute a polynomial with
- * coefficients distributed according to a centered binomial distribution
- * with parameter MLKEM_ETA1.
- *
- * @spec{Implements @[FIPS203, Algorithm 8, SamplePolyCBD_eta1], where eta1
- * is specified per parameter set in @[FIPS203, Table 2] and represented as
- * MLKEM_ETA1 here.}
- *
- * @reference{`poly_cbd_eta1` in the reference implementation @[REF].}
- *
- * @param[out] r   Output polynomial.
- * @param[in]  buf Input byte array.
- */
-static void mlk_poly_cbd_eta1(
-    mlk_poly *r, const u8int buf[MLKEM_ETA1 * MLKEM_N / 4])
-{
-#if MLKEM_ETA1 == 2
-  mlk_poly_cbd2(r, buf);
-#elif MLKEM_ETA1 == 3
-  mlk_poly_cbd3(r, buf);
-#else
-#error "Invalid value of MLKEM_ETA1"
-#endif
-}
 
 /* Reference: Does not exist in the reference implementation @[REF].
  *            - This implements a x4-batched version of `poly_getnoise_eta1()`
  *              from the reference implementation, to leverage
  *              batched Keccak-f1600.*/
 MLK_INTERNAL_API
-void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
+void mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3)
 {
-  u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
+  u8int buf[4][MLK_ALIGN_UP(3 * MLKEM_N / 4)];
   u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
   mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
   mlk_memcpy(extkey[1], seed, MLKEM_SYMBYTES);
@@ -267,21 +233,34 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   extkey[2][MLKEM_SYMBYTES] = nonce2;
   extkey[3][MLKEM_SYMBYTES] = nonce3;
 
-  mlk_prf_eta1(buf[0], extkey[0]);
-  mlk_prf_eta1(buf[1], extkey[1]);
-  mlk_prf_eta1(buf[2], extkey[2]);
-  if (r3 != nil)
-  {
-    mlk_prf_eta1(buf[3], extkey[3]);
-  }
-
-  mlk_poly_cbd_eta1(r0, buf[0]);
-  mlk_poly_cbd_eta1(r1, buf[1]);
-  mlk_poly_cbd_eta1(r2, buf[2]);
-  if (r3 != nil)
-  {
-    mlk_poly_cbd_eta1(r3, buf[3]);
-  }
+  if(level == K512){
+    mlk_prf_eta(3, buf[0], extkey[0]);
+    mlk_prf_eta(3, buf[1], extkey[1]);
+    mlk_prf_eta(3, buf[2], extkey[2]);
+    if (r3 != nil){
+      mlk_prf_eta(3, buf[3], extkey[3]);
+    }
+    mlk_poly_cbd3(r0, buf[0]);
+    mlk_poly_cbd3(r1, buf[1]);
+    mlk_poly_cbd3(r2, buf[2]);
+    if (r3 != nil){
+      mlk_poly_cbd3(r3, buf[3]);
+    }
+  } else if(level == K768 || level == K1024){
+    mlk_prf_eta(2, buf[0], extkey[0]);
+    mlk_prf_eta(2, buf[1], extkey[1]);
+    mlk_prf_eta(2, buf[2], extkey[2]);
+    if (r3 != nil){
+      mlk_prf_eta(2, buf[3], extkey[3]);
+    }
+    mlk_poly_cbd2(r0, buf[0]);
+    mlk_poly_cbd2(r1, buf[1]);
+    mlk_poly_cbd2(r2, buf[2]);
+    if (r3 != nil){
+      mlk_poly_cbd2(r3, buf[3]);
+    }
+  } else
+    abort();
 
 
   /* Specification: Partially implements
@@ -289,6 +268,15 @@ void mlk_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_zeroize(buf, sizeof(buf));
   mlk_zeroize(extkey, sizeof(extkey));
 }
+#endif
+
+#include "params.h"
+
+#define mlk_prf_eta1(OUT, IN) mlk_prf_eta(MLKEM_ETA1, OUT, IN)
+#define mlk_prf_eta2(OUT, IN) mlk_prf_eta(MLKEM_ETA2, OUT, IN)
+
+#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
+#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 
 #if MLKEM_K == 2 || MLKEM_K == 4
 /**
@@ -376,8 +364,8 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_prf_eta2(buf[2], extkey[2]);
   mlk_prf_eta2(buf[3], extkey[3]);
 
-  mlk_poly_cbd_eta1(r0, buf[0]);
-  mlk_poly_cbd_eta1(r1, buf[1]);
+  mlk_poly_cbd3(r0, buf[0]);
+  mlk_poly_cbd3(r1, buf[1]);
   mlk_poly_cbd_eta2(r2, buf[2]);
   mlk_poly_cbd_eta2(r3, buf[3]);
 

@@ -26,8 +26,6 @@
 #include "fips202.h"
 #include "params.h"
 
-#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
-#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 
 #define mlk_indcpa_keypair_derand MLK_NAMESPACE_K(indcpa_keypair_derand)
@@ -260,7 +258,7 @@ static void mlk_keypair_getnoise_eta1(mlk_polyvec *pv, mlk_polyvec *e,
                                       const u8int seed[MLKEM_SYMBYTES])
 {
 #if MLKEM_K == 2
-  mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], /* Fill elements of pv */
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &pv->vec[0], &pv->vec[1], /* Fill elements of pv */
                             &e->vec[0], &e->vec[1], /* and two elements of e */
                             seed, 0, 1, 2, 3);
 #elif MLKEM_K == 3
@@ -268,15 +266,15 @@ static void mlk_keypair_getnoise_eta1(mlk_polyvec *pv, mlk_polyvec *e,
    * Only the first three output buffers are needed, so we pass nil as
    * the fourth parameter, and 0xFF as its dummy nonce.
    */
-  mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], &pv->vec[2], nil, seed,
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &pv->vec[0], &pv->vec[1], &pv->vec[2], nil, seed,
                             0, 1, 2, 0xFF);
   /* Same here */
-  mlk_poly_getnoise_eta1_4x(&e->vec[0], &e->vec[1], &e->vec[2], nil, seed, 3,
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &e->vec[0], &e->vec[1], &e->vec[2], nil, seed, 3,
                             4, 5, 0xFF);
 #elif MLKEM_K == 4
-  mlk_poly_getnoise_eta1_4x(&pv->vec[0], &pv->vec[1], &pv->vec[2], &pv->vec[3],
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &pv->vec[0], &pv->vec[1], &pv->vec[2], &pv->vec[3],
                             seed, 0, 1, 2, 3);
-  mlk_poly_getnoise_eta1_4x(&e->vec[0], &e->vec[1], &e->vec[2], &e->vec[3],
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &e->vec[0], &e->vec[1], &e->vec[2], &e->vec[3],
                             seed, 4, 5, 6, 7);
 #endif /* MLKEM_K == 4 */
 }
@@ -306,15 +304,15 @@ static void mlk_enc_getnoise_eta1_eta2(mlk_polyvec *sp, mlk_polyvec *ep,
    * In this call, only the first three output buffers are needed.
    * The last parameter is a dummy that's overwritten later.
    */
-  mlk_poly_getnoise_eta1_4x(&sp->vec[0], &sp->vec[1], &sp->vec[2], nil, coins,
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &sp->vec[0], &sp->vec[1], &sp->vec[2], nil, coins,
                             0, 1, 2, 0xFF /* irrelevant */);
   /* The fourth output buffer in this call _is_ used. */
-  mlk_poly_getnoise_eta2_4x(&ep->vec[0], &ep->vec[1], &ep->vec[2], epp, coins,
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &ep->vec[0], &ep->vec[1], &ep->vec[2], epp, coins,
                             3, 4, 5, 6);
 #elif MLKEM_K == 4
-  mlk_poly_getnoise_eta1_4x(&sp->vec[0], &sp->vec[1], &sp->vec[2], &sp->vec[3],
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &sp->vec[0], &sp->vec[1], &sp->vec[2], &sp->vec[3],
                             coins, 0, 1, 2, 3);
-  mlk_poly_getnoise_eta2_4x(&ep->vec[0], &ep->vec[1], &ep->vec[2], &ep->vec[3],
+  mlk_poly_getnoise_eta1_4x(MLKEM_K, &ep->vec[0], &ep->vec[1], &ep->vec[2], &ep->vec[3],
                             coins, 4, 5, 6, 7);
   mlk_poly_getnoise_eta2(epp, coins, 8);
 #endif /* MLKEM_K == 4 */

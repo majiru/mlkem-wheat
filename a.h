@@ -102,8 +102,6 @@ int mlk_randombytes(u8int *out, ulong outlen);
  * Referring to (eq 4.3), `OUT` is assumed to contain `s || b`. */
 #define mlk_prf_eta(ETA, OUT, IN) \
   mlk_shake256(OUT, (ETA) * MLKEM_N / 4, IN, MLKEM_SYMBYTES + 1)
-#define mlk_prf_eta1(OUT, IN) mlk_prf_eta(MLKEM_ETA1, OUT, IN)
-#define mlk_prf_eta2(OUT, IN) mlk_prf_eta(MLKEM_ETA2, OUT, IN)
 
 /* XOF function, FIPS 203 4.1 */
 #define mlk_xof_ctx mlk_shake128ctx
@@ -215,12 +213,11 @@ void mlk_polyvec_add(int level, mlk_polyvec *r, const mlk_polyvec *b);
 void mlk_polyvec_basemul_acc_montgomery_cached(int level,
     mlk_poly *r, const mlk_polyvec *a, const mlk_polyvec *b,
     const mlk_polyvec_mulcache *b_cache);
-
-
-void mlkem512_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
+void mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3);
+
 void mlkem512_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
                             u8int nonce);
 void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
@@ -229,15 +226,6 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3);
 
-void mlkem768_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
-                               mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
-                               u8int nonce0, u8int nonce1, u8int nonce2,
-                               u8int nonce3);
-
-void mlkem1024_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
-                               mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
-                               u8int nonce0, u8int nonce1, u8int nonce2,
-                               u8int nonce3);
 void mlkem1024_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
                             u8int nonce);
 
