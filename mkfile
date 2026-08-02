@@ -5,13 +5,13 @@ CFLAGS=-FTVw
 
 PORT=\
 	sampling.$O\
-	verify.$O\
 	compress.$O\
 	fips202-plan9.$O\
 	poly.$O\
 	kem.$O\
 	poly_k.$O\
 	indcpa.$O\
+	verify.$O\
 
 OFILES=\
 	main.$O\

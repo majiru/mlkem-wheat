@@ -201,3 +201,12 @@ u8int mlk_ct_sel_uint8(u8int a, u8int b, u8int cond)
 {
   return b ^ (mlk_ct_cmask_nonzero_u8(cond) & (a ^ b));
 }
+
+void mlk_ct_cmov_zero(u8int *r, const u8int *x,
+                                        ulong len, u8int b)
+{
+  ulong i;
+  for (i = 0; i < len; i++){
+    r[i] = mlk_ct_sel_uint8(r[i], x[i], b);
+  }
+}

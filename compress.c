@@ -563,8 +563,8 @@ void mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
       /* mlk_ct_sel_int16(MLKEM_Q_HALF, 0, b) is `Decompress_1(b != 0)`
        * as per @[FIPS203, Eq (4.8)]. */
 
-      /* Prevent the compiler from recognizing this as a bit selection */
-      u8int mask = mlk_value_barrier_u8((u8int)(1u << j));
+      /* Assumes the compiler does not change this to a bit selection */
+      u8int mask = 1u << j;
       r->coeffs[8 * i + j] = mlk_ct_sel_int16(MLKEM_Q_HALF, 0, msg[i] & mask);
     }
   }

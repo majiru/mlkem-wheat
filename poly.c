@@ -40,11 +40,11 @@ s16int mlk_montgomery_reduce(s32int a)
   const u32int QINV = 62209;
 
   /* Compute a*q^{-1} mod 2^16 in unsigned representatives. */
-  const u16int a_reduced = mlk_cast_s32into_uint16(a);
+  const u16int a_reduced = (u16int)(a & (s32int)0xffff);
   const u16int a_inverted = (a_reduced * QINV) & 0xffff;
 
   /* Lift to signed canonical representative mod 2^16. */
-  const s16int t = mlk_cast_u16into_int16(a_inverted);
+  const s16int t = (s16int)a_inverted;
 
   s32int r;
 
@@ -165,7 +165,7 @@ static s16int mlk_scalar_signed_to_unsigned_q(s16int c)
    *
    * Note that c + MLKEM_Q does not overflow in s16int,
    * so the cast to u16int is safe. */
-  c = mlk_ct_sel_int16((s16int)(c + MLKEM_Q), c, mlk_ct_cmask_neg_i16(c));
+  c = mlk_ct_sel_int16((s16int)(c + MLKEM_Q), c, ((u16int)(((s32int)c)>>16) & (s32int)0xffff));
 
   return c;
 }

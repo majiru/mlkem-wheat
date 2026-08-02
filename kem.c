@@ -198,8 +198,8 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 		abort();
 	}
 
-	if(fail == 0)
-		memcpy(ss, kr, MLKEM_SYMBYTES);
+	/* constant time memcpy using fail as the conditional */
+	mlk_ct_cmov_zero(ss, kr, MLKEM_SYMBYTES, fail);
 
 cleanup:
 	/* Specification: Partially implements
