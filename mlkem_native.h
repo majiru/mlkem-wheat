@@ -26,11 +26,6 @@
 #define MLKEM1024_PUBLICKEYBYTES 1568
 #define MLKEM1024_CIPHERTEXTBYTES 1568
 
-/* Size of randomness coins in bytes (level-independent) */
-#define MLKEM_SYMBYTES 32
-#define MLKEM512_SYMBYTES MLKEM_SYMBYTES
-#define MLKEM768_SYMBYTES MLKEM_SYMBYTES
-#define MLKEM1024_SYMBYTES MLKEM_SYMBYTES
 /* Size of shared secret in bytes (level-independent) */
 #define MLKEM_BYTES 32
 #define MLKEM512_BYTES MLKEM_BYTES
@@ -75,11 +70,6 @@ int mlkem768_dec(
     u8int ss[MLKEM_BYTES],
     const u8int ct[MLKEM768_CIPHERTEXTBYTES],
     const u8int sk[MLKEM768_SECRETKEYBYTES]
-);
-int mlkem1024_keypair_derand(
-    u8int pk[MLKEM1024_PUBLICKEYBYTES],
-    u8int sk[MLKEM1024_SECRETKEYBYTES],
-    const u8int coins[2 * MLKEM_SYMBYTES]
 );
 int mlkem1024_keypair(
     u8int pk[MLKEM1024_PUBLICKEYBYTES],
