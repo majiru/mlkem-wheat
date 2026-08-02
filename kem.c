@@ -132,21 +132,22 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 	if(ret != 0)
 		goto cleanup;
 
+	ret = mlk_indcpa_dec(level, buf, ct, sk);
+	if(ret != 0)
+		goto cleanup;
+
+	/* Multitarget countermeasure for coins + contributory KEM */
+	memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(level) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
+	mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
+
+	/* Recompute and compare ciphertext */
+	/* coins are in kr+MLKEM_SYMBYTES */
+	ret = mlk_indcpa_enc(level, tmp, buf, pk, kr + MLKEM_SYMBYTES);
+	if(ret != 0)
+		goto cleanup;
+
 	switch(level){
 	case K512:
-		ret = mlk_indcpa_dec(level, buf, ct, sk);
-		if(ret != 0)
-			goto cleanup;
-
-		/* Multitarget countermeasure for coins + contributory KEM */
-		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K512) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
-
-		/* Recompute and compare ciphertext */
-		/* coins are in kr+MLKEM_SYMBYTES */
-		ret = mlk_indcpa_enc(level, tmp, buf, pk, kr + MLKEM_SYMBYTES);
-		if(ret != 0)
-			goto cleanup;
 		fail = mlk_ct_memcmp(ct, tmp, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K512) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
@@ -154,19 +155,6 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K768:
-		ret = mlk_indcpa_dec(level, buf, ct, sk);
-		if(ret != 0)
-			goto cleanup;
-
-		/* Multitarget countermeasure for coins + contributory KEM */
-		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K768) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
-
-		/* Recompute and compare ciphertext */
-		/* coins are in kr+MLKEM_SYMBYTES */
-		ret = mlk_indcpa_enc(level, tmp, buf, pk, kr + MLKEM_SYMBYTES);
-		if(ret != 0)
-			goto cleanup;
 		fail = mlk_ct_memcmp(ct, tmp, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K768) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
@@ -174,19 +162,6 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K1024:
-		ret = mlk_indcpa_dec(level, buf, ct, sk);
-		if(ret != 0)
-			goto cleanup;
-
-		/* Multitarget countermeasure for coins + contributory KEM */
-		memcpy(buf + MLKEM_SYMBYTES, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K1024) - 2 * MLKEM_SYMBYTES, MLKEM_SYMBYTES);
-		mlk_hash_g(kr, buf, 2 * MLKEM_SYMBYTES);
-
-		/* Recompute and compare ciphertext */
-		/* coins are in kr+MLKEM_SYMBYTES */
-		ret = mlk_indcpa_enc(level, tmp, buf, pk, kr + MLKEM_SYMBYTES);
-		if(ret != 0)
-			goto cleanup;
 		fail = mlk_ct_memcmp(ct, tmp, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K1024) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
