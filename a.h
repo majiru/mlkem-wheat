@@ -187,17 +187,17 @@ void mlk_poly_tomsg(u8int msg[MLKEM_INDCPA_MSGBYTES], const mlk_poly *r);
 /* Sized up to the max it can be for 1024 FIXME(?) */
 typedef struct
 {
-  mlk_poly vec[4];
+  mlk_poly vec[K1024];
 } mlk_polyvec;
 
 typedef struct
 {
- mlk_polyvec vec[4];
+ mlk_polyvec vec[K1024];
 } mlk_polymat;
 
 typedef struct
 {
-  mlk_poly_mulcache vec[4];
+  mlk_poly_mulcache vec[K1024];
 } mlk_polyvec_mulcache;
 
 void mlk_polyvec_compress_du(int level, u8int r[(2 * MLKEM_POLYCOMPRESSEDBYTES_D10)],
@@ -212,10 +212,11 @@ void mlk_polyvec_tomont(int level, mlk_polyvec *r);
 void mlk_polyvec_mulcache_compute(int level, mlk_polyvec_mulcache *x, const mlk_polyvec *a);
 void mlk_polyvec_reduce(int level, mlk_polyvec *r);
 void mlk_polyvec_add(int level, mlk_polyvec *r, const mlk_polyvec *b);
-
-void mlkem512_polyvec_basemul_acc_montgomery_cached(
+void mlk_polyvec_basemul_acc_montgomery_cached(int level,
     mlk_poly *r, const mlk_polyvec *a, const mlk_polyvec *b,
     const mlk_polyvec_mulcache *b_cache);
+
+
 void mlkem512_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,
@@ -228,17 +229,11 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3);
 
-void mlkem768_polyvec_basemul_acc_montgomery_cached(
-    mlk_poly *r, const mlk_polyvec *a, const mlk_polyvec *b,
-    const mlk_polyvec_mulcache *b_cache);
 void mlkem768_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3);
 
-void mlkem1024_polyvec_basemul_acc_montgomery_cached(
-    mlk_poly *r, const mlk_polyvec *a, const mlk_polyvec *b,
-    const mlk_polyvec_mulcache *b_cache);
 void mlkem1024_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,

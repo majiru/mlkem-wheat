@@ -178,14 +178,6 @@ void mlk_polyvec_add(int level, mlk_polyvec *r, const mlk_polyvec *b)
     mlk_poly_add(&r->vec[i], &b->vec[i]);
   }
 }
-#endif
-
-#include "params.h"
-
-#define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
-#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
-#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
-#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 
 /* Reference: `polyvec_basemul_acc_montgomery()` in the
  *            reference implementation @[REF].
@@ -198,7 +190,7 @@ void mlk_polyvec_add(int level, mlk_polyvec *r, const mlk_polyvec *b)
  *              at the end. The reference implementation uses 2 * MLKEM_K
  *              more modular reductions since it reduces after every modular
  *              multiplication. */
-MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(
+MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(int level,
     mlk_poly *r, const mlk_polyvec *a, const mlk_polyvec *b,
     const mlk_polyvec_mulcache *b_cache)
 {
@@ -208,7 +200,7 @@ MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(
   {
     unsigned k;
     s32int t[2] = {0};
-    for (k = 0; k < MLKEM_K; k++)
+    for (k = 0; k < level; k++)
     {
       t[0] += (s32int)a->vec[k].coeffs[2 * i + 1] * b_cache->vec[k].coeffs[i];
       t[0] += (s32int)a->vec[k].coeffs[2 * i] * b->vec[k].coeffs[2 * i];
@@ -219,6 +211,13 @@ MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(
     r->coeffs[2 * i + 1] = mlk_montgomery_reduce(t[1]);
   }
 }
+#endif
+
+#include "params.h"
+
+#define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
+#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
+#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
 
 
 /**
