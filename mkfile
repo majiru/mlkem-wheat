@@ -6,7 +6,6 @@ CFLAGS=-FTVw
 PORT=\
 	sampling.$O\
 	compress.$O\
-	fips202-plan9.$O\
 	poly.$O\
 	kem.$O\
 	poly_k.$O\

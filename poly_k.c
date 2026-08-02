@@ -28,7 +28,6 @@
 #include <libsec.h>
 
 #include "a.h"
-#include "fips202.h"
 
 #define _MLKEM_POLYVECBYTES(lvl) (lvl * MLKEM_POLYBYTES)
 

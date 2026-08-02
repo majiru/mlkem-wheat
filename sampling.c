@@ -23,7 +23,6 @@
 #include <libsec.h>
 
 #include "a.h"
-#include "fips202.h"
 
 /**
  * Run rejection sampling on uniform random bytes to generate uniform random
@@ -99,17 +98,21 @@ static unsigned mlk_rej_uniform(s16int *r, unsigned target,
 MLK_INTERNAL_API
 void mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 {
-  mlk_xof_ctx state;
+  struct {
+    DigestState d;
+    XOFState x;
+  } state;
   u8int buf[MLKEM_GEN_MATRIX_NBLOCKS * MLK_XOF_RATE];
   unsigned ctr, buflen;
 
-  mlk_xof_init(&state);
-  mlk_xof_absorb(&state, seed, MLKEM_SYMBYTES + 2);
+  memset(&state, 0, sizeof state);
+  shake_128_in(seed, MLKEM_SYMBYTES + 2, &state.d);
+  shake_128_convert(&state.x, &state.d);
 
   /* Initially, squeeze + sample heuristic number of MLKEM_GEN_MATRIX_NBLOCKS.
    */
   /* This should generate the matrix entry with high probability. */
-  mlk_xof_squeezeblocks(buf, MLKEM_GEN_MATRIX_NBLOCKS, &state);
+  shake_128_out(buf, MLKEM_GEN_MATRIX_NBLOCKS * SHAKE128_RATE, &state.x);
   buflen = MLKEM_GEN_MATRIX_NBLOCKS * MLK_XOF_RATE;
   ctr = mlk_rej_uniform(entry->coeffs, MLKEM_N, 0, buf, buflen);
 
@@ -117,11 +120,11 @@ void mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
   buflen = MLK_XOF_RATE;
   while (ctr < MLKEM_N)
   {
-    mlk_xof_squeezeblocks(buf, 1, &state);
+    shake_128_out(buf, SHAKE128_RATE, &state.x);
     ctr = mlk_rej_uniform(entry->coeffs, MLKEM_N, ctr, buf, buflen);
   }
 
-  mlk_xof_release(&state);
+  memset(&state, 0, sizeof state);
 
   /* Specification: Partially implements
    * @[FIPS203, Section 3.3, Destruction of intermediate values] */

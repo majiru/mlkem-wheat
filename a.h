@@ -76,29 +76,21 @@ int mlk_randombytes(u8int *out, ulong outlen);
 /* Macros denoting FIPS 203 specific Hash functions */
 
 /* Hash function H, @[FIPS203, Section 4.1, Eq (4.4)] */
-#define mlk_hash_h(OUT, IN, INBYTES) mlk_sha3_256(OUT, IN, INBYTES)
+#define mlk_hash_h(OUT, IN, INBYTES) sha3_256(IN, INBYTES, OUT, nil)
 
 /* Hash function G, @[FIPS203, Section 4.1, Eq (4.5)] */
-#define mlk_hash_g(OUT, IN, INBYTES) mlk_sha3_512(OUT, IN, INBYTES)
+#define mlk_hash_g(OUT, IN, INBYTES) sha3_512(IN, INBYTES, OUT, nil)
 
 /* Hash function J, @[FIPS203, Section 4.1, Eq (4.4)] */
 #define mlk_hash_j(OUT, IN, INBYTES) \
-  mlk_shake256(OUT, MLKEM_SYMBYTES, IN, INBYTES)
+  shake_256(IN, INBYTES, OUT, MLKEM_SYMBYTES)
 
 /* PRF function, @[FIPS203, Section 4.1, Eq (4.3)]
  * Referring to (eq 4.3), `OUT` is assumed to contain `s || b`. */
 #define mlk_prf_eta(ETA, OUT, IN) \
-  mlk_shake256(OUT, (ETA) * MLKEM_N / 4, IN, MLKEM_SYMBYTES + 1)
+  shake_256(IN, MLKEM_SYMBYTES + 1, OUT, (ETA) * MLKEM_N / 4)
 
-/* XOF function, FIPS 203 4.1 */
-#define mlk_xof_ctx mlk_shake128ctx
-#define mlk_xof_init(CTX) mlk_shake128_init((CTX))
-#define mlk_xof_absorb(CTX, IN, INBYTES) \
-  mlk_shake128_absorb_once((CTX), (IN), (INBYTES))
-#define mlk_xof_squeezeblocks(BUF, NBLOCKS, CTX) \
-  mlk_shake128_squeezeblocks((BUF), (NBLOCKS), (CTX))
-#define mlk_xof_release(CTX) mlk_shake128_release((CTX))
-
+#define SHAKE128_RATE 168
 #define MLK_XOF_RATE SHAKE128_RATE
 
 /***** poly.c  *****/
