@@ -200,14 +200,11 @@ typedef struct
   mlk_poly_mulcache vec[4];
 } mlk_polyvec_mulcache;
 
-void mlkem512_poly_compress_du(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D10], const mlk_poly *a);
-void mlkem512_poly_decompress_du(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D10]);
-void mlkem512_poly_compress_dv(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D4], const mlk_poly *a);
-void mlkem512_poly_decompress_dv(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D4]);
-void mlkem512_polyvec_compress_du(u8int r[(2 * MLKEM_POLYCOMPRESSEDBYTES_D10)],
+void mlk_polyvec_compress_du(int level, u8int r[(2 * MLKEM_POLYCOMPRESSEDBYTES_D10)],
                              const mlk_polyvec *a);
-void mlkem512_polyvec_decompress_du(mlk_polyvec *r,
+void mlk_polyvec_decompress_du(int level, mlk_polyvec *r,
                                const u8int a[(2 * MLKEM_POLYCOMPRESSEDBYTES_D10)]);
+
 void mlkem512_polyvec_tobytes(u8int r[(2 * MLKEM_POLYBYTES)], const mlk_polyvec *a);
 void mlkem512_polyvec_frombytes(mlk_polyvec *r, const u8int a[(2 * MLKEM_POLYBYTES)]);
 void mlkem512_polyvec_ntt(mlk_polyvec *r);
@@ -231,14 +228,6 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3);
 
-void mlkem768_poly_compress_du(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D10], const mlk_poly *a);
-void mlkem768_poly_decompress_du(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D10]);
-void mlkem768_poly_compress_dv(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D4], const mlk_poly *a);
-void mlkem768_poly_decompress_dv(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D4]);
-void mlkem768_polyvec_compress_du(u8int r[(3 * MLKEM_POLYCOMPRESSEDBYTES_D10)],
-                             const mlk_polyvec *a);
-void mlkem768_polyvec_decompress_du(mlk_polyvec *r,
-                               const u8int a[(3 * MLKEM_POLYCOMPRESSEDBYTES_D10)]);
 void mlkem768_polyvec_tobytes(u8int r[(3 * MLKEM_POLYBYTES)], const mlk_polyvec *a);
 void mlkem768_polyvec_frombytes(mlk_polyvec *r, const u8int a[(3 * MLKEM_POLYBYTES)]);
 void mlkem768_polyvec_ntt(mlk_polyvec *r);
@@ -255,14 +244,6 @@ void mlkem768_poly_getnoise_eta1_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3);
 
-void mlkem1024_poly_compress_du(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D11], const mlk_poly *a);
-void mlkem1024_poly_decompress_du(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D11]);
-void mlkem1024_poly_compress_dv(u8int r[MLKEM_POLYCOMPRESSEDBYTES_D5], const mlk_poly *a);
-void mlkem1024_poly_decompress_dv(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D5]);
-void mlkem1024_polyvec_compress_du(u8int r[(4 * MLKEM_POLYCOMPRESSEDBYTES_D11)],
-                             const mlk_polyvec *a);
-void mlkem1024_polyvec_decompress_du(mlk_polyvec *r,
-                               const u8int a[(4 * MLKEM_POLYCOMPRESSEDBYTES_D11)]);
 void mlkem1024_polyvec_tobytes(u8int r[(4 * MLKEM_POLYBYTES)], const mlk_polyvec *a);
 void mlkem1024_polyvec_frombytes(mlk_polyvec *r, const u8int a[(4 * MLKEM_POLYBYTES)]);
 void mlkem1024_polyvec_ntt(mlk_polyvec *r);

@@ -29,10 +29,6 @@
 #define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
 #define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
 #define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
-#define mlk_poly_compress_dv MLK_NAMESPACE_K(poly_compress_dv)
-#define mlk_poly_decompress_dv MLK_NAMESPACE_K(poly_decompress_dv)
-#define mlk_polyvec_compress_du MLK_NAMESPACE_K(polyvec_compress_du)
-#define mlk_polyvec_decompress_du MLK_NAMESPACE_K(polyvec_decompress_du)
 #define mlk_polyvec_ntt MLK_NAMESPACE_K(polyvec_ntt)
 #define mlk_polyvec_invntt_tomont MLK_NAMESPACE_K(polyvec_invntt_tomont)
 #define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
@@ -42,7 +38,6 @@
 #define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
 #define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-#define mlk_poly_getnoise_eta1122_4x MLK_NAMESPACE_K(poly_getnoise_eta1122_4x)
 
 #define mlk_indcpa_keypair_derand MLK_NAMESPACE_K(indcpa_keypair_derand)
 #define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
@@ -132,8 +127,12 @@ static void mlk_unpack_sk(mlk_polyvec *sk,
 static void mlk_pack_ciphertext(u8int r[MLKEM_INDCPA_BYTES],
                                 const mlk_polyvec *b, mlk_poly *v)
 {
-  mlk_polyvec_compress_du(r, b);
-  mlk_poly_compress_dv(r + MLKEM_POLYVECCOMPRESSEDBYTES_DU, v);
+  mlk_polyvec_compress_du(MLKEM_K, r, b);
+#if MLKEM_K == 2 || MLKEM_K == 3
+  mlk_poly_compress_d4(r + MLKEM_POLYVECCOMPRESSEDBYTES_DU, v);
+#else
+  mlk_poly_compress_d5(r + MLKEM_POLYVECCOMPRESSEDBYTES_DU, v);
+#endif
 }
 
 /**
@@ -149,8 +148,12 @@ static void mlk_pack_ciphertext(u8int r[MLKEM_INDCPA_BYTES],
 static void mlk_unpack_ciphertext(mlk_polyvec *b, mlk_poly *v,
                                   const u8int c[MLKEM_INDCPA_BYTES])
 {
-  mlk_polyvec_decompress_du(b, c);
-  mlk_poly_decompress_dv(v, c + MLKEM_POLYVECCOMPRESSEDBYTES_DU);
+  mlk_polyvec_decompress_du(MLKEM_K, b, c);
+#if MLKEM_K == 2 || MLKEM_K == 3
+  mlk_poly_decompress_d4(v, c + MLKEM_POLYVECCOMPRESSEDBYTES_DU);
+#else
+  mlk_poly_decompress_d5(v, c + MLKEM_POLYVECCOMPRESSEDBYTES_DU);
+#endif
 }
 
 /* Helper function to ensure that the polynomial entries in the output
@@ -304,7 +307,7 @@ static void mlk_enc_getnoise_eta1_eta2(mlk_polyvec *sp, mlk_polyvec *ep,
                                        const u8int coins[MLKEM_SYMBYTES])
 {
 #if MLKEM_K == 2
-  mlk_poly_getnoise_eta1122_4x(&sp->vec[0], &sp->vec[1], &ep->vec[0],
+  mlkem512_poly_getnoise_eta1122_4x(&sp->vec[0], &sp->vec[1], &ep->vec[0],
                                &ep->vec[1], coins, 0, 1, 2, 3);
   mlk_poly_getnoise_eta2(epp, coins, 4);
 #elif MLKEM_K == 3

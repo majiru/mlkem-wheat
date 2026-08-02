@@ -29,17 +29,46 @@
 
 #include "a.h"
 #include "fips202.h"
+
+#if MLK_CONFIG_PARAMETER_SET == 512
+/* Reference: `polyvec_compress()` in the reference implementation @[REF]
+ *            - In contrast to the reference implementation, we assume
+ *              unsigned canonical coefficients here.
+ *              The reference implementation works with coefficients
+ *              in the range [-(MLKEM_Q-1), MLKEM_Q-1]. */
+MLK_INTERNAL_API
+void mlk_polyvec_compress_du(int level, u8int *r, const mlk_polyvec *a)
+{
+  unsigned i;
+
+  for (i = 0; i < level; i++){
+    if(level == K1024)
+      mlk_poly_compress_d11(r + i * MLKEM_POLYCOMPRESSEDBYTES_D11, &a->vec[i]);
+    else
+      mlk_poly_compress_d10(r + i * MLKEM_POLYCOMPRESSEDBYTES_D10, &a->vec[i]);
+  }
+}
+
+/* Reference: `polyvec_decompress()` in the reference implementation @[REF]. */
+MLK_INTERNAL_API
+void mlk_polyvec_decompress_du(int level, mlk_polyvec *r, const u8int *a)
+{
+  unsigned i;
+
+  for (i = 0; i < level; i++){
+    if(level == K1024)
+      mlk_poly_decompress_d11(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_D11);
+    else
+      mlk_poly_decompress_d10(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_D10);
+  }
+}
+#endif
+
 #include "params.h"
 
 #define mlk_polyvec_tobytes MLK_NAMESPACE_K(polyvec_tobytes)
 #define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
 #define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
-#define mlk_poly_compress_du MLK_NAMESPACE_K(poly_compress_du)
-#define mlk_poly_decompress_du MLK_NAMESPACE_K(poly_decompress_du)
-#define mlk_poly_compress_dv MLK_NAMESPACE_K(poly_compress_dv)
-#define mlk_poly_decompress_dv MLK_NAMESPACE_K(poly_decompress_dv)
-#define mlk_polyvec_compress_du MLK_NAMESPACE_K(polyvec_compress_du)
-#define mlk_polyvec_decompress_du MLK_NAMESPACE_K(polyvec_decompress_du)
 #define mlk_polyvec_ntt MLK_NAMESPACE_K(polyvec_ntt)
 #define mlk_polyvec_invntt_tomont MLK_NAMESPACE_K(polyvec_invntt_tomont)
 #define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
@@ -49,150 +78,7 @@
 #define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
 #define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-#define mlk_poly_getnoise_eta1122_4x MLK_NAMESPACE_K(poly_getnoise_eta1122_4x)
-
-/* Parameter set namespacing
- * This is to facilitate building multiple instances
- * of mlkem-native (e.g. with varying parameter sets)
- * within a single compilation unit. */
-#define mlk_poly_cbd_eta1 MLK_ADD_PARAM_SET(mlk_poly_cbd_eta1)
-#define mlk_poly_cbd_eta2 MLK_ADD_PARAM_SET(mlk_poly_cbd_eta2)
-#define mlk_polyvec_basemul_acc_montgomery_cached_c \
-  MLK_ADD_PARAM_SET(mlk_polyvec_basemul_acc_montgomery_cached_c)
-/* End of parameter set namespacing */
-
-/**
- * Compression (du bits) and subsequent serialization of a polynomial.
- *
- * @spec{Implements `ByteEncode_{d_u} (Compress_{d_u} (u))` in @[FIPS203,
- * Algorithm 14 (K-PKE.Encrypt), L22], with level-specific d_u defined in
- * @[FIPS203, Table 2], and given by MLKEM_DU here.}
- *
- * @param[out] r Output byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DU
- *               bytes).
- * @param[in]  a Input polynomial. Coefficients must be unsigned canonical,
- *               i.e. in [0,1,..,MLKEM_Q-1].
- */
-void mlk_poly_compress_du(
-    u8int r[MLKEM_POLYCOMPRESSEDBYTES_DU], const mlk_poly *a)
-{
-#if MLKEM_DU == 10
-  mlk_poly_compress_d10(r, a);
-#elif MLKEM_DU == 11
-  mlk_poly_compress_d11(r, a);
-#else
-#error "Invalid value of MLKEM_DU"
-#endif
-}
-
-/**
- * De-serialization and subsequent decompression (du bits) of a polynomial;
- * approximate inverse of mlk_poly_compress_du.
- *
- * Upon return, the coefficients of the output polynomial are
- * unsigned-canonical (non-negative and smaller than MLKEM_Q).
- *
- * @spec{Implements `Decompress_{d_u} (ByteDecode_{d_u} (u))` in @[FIPS203,
- * Algorithm 15 (K-PKE.Decrypt), L3], with level-specific d_u defined in
- * @[FIPS203, Table 2], and given by MLKEM_DU here.}
- *
- * @param[out] r Output polynomial.
- * @param[in]  a Input byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DU
- *               bytes).
- */
-void mlk_poly_decompress_du(
-    mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_DU])
-{
-#if MLKEM_DU == 10
-  mlk_poly_decompress_d10(r, a);
-#elif MLKEM_DU == 11
-  mlk_poly_decompress_d11(r, a);
-#else
-#error "Invalid value of MLKEM_DU"
-#endif
-}
-
-/**
- * Compression (dv bits) and subsequent serialization of a polynomial.
- *
- * @spec{Implements `ByteEncode_{d_v} (Compress_{d_v} (v))` in @[FIPS203,
- * Algorithm 14 (K-PKE.Encrypt), L23], with level-specific d_v defined in
- * @[FIPS203, Table 2], and given by MLKEM_DV here.}
- *
- * @param[out] r Output byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DV
- *               bytes).
- * @param[in]  a Input polynomial. Coefficients must be unsigned canonical,
- *               i.e. in [0,1,..,MLKEM_Q-1].
- */
-void mlk_poly_compress_dv(
-    u8int r[MLKEM_POLYCOMPRESSEDBYTES_DV], const mlk_poly *a)
-{
-#if MLKEM_DV == 4
-  mlk_poly_compress_d4(r, a);
-#elif MLKEM_DV == 5
-  mlk_poly_compress_d5(r, a);
-#else
-#error "Invalid value of MLKEM_DV"
-#endif
-}
-
-/**
- * De-serialization and subsequent decompression (dv bits) of a polynomial;
- * approximate inverse of mlk_poly_compress_dv.
- *
- * Upon return, the coefficients of the output polynomial are
- * unsigned-canonical (non-negative and smaller than MLKEM_Q).
- *
- * @spec{Implements `Decompress_{d_v} (ByteDecode_{d_v} (v))` in @[FIPS203,
- * Algorithm 15 (K-PKE.Decrypt), L4], with level-specific d_v defined in
- * @[FIPS203, Table 2], and given by MLKEM_DV here.}
- *
- * @param[out] r Output polynomial.
- * @param[in]  a Input byte array (of length MLKEM_POLYCOMPRESSEDBYTES_DV
- *               bytes).
- */
-void mlk_poly_decompress_dv(
-    mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_DV])
-{
-#if MLKEM_DV == 4
-  mlk_poly_decompress_d4(r, a);
-#elif MLKEM_DV == 5
-  mlk_poly_decompress_d5(r, a);
-#else
-#error "Invalid value of MLKEM_DV"
-#endif
-}
-
-
-/* Reference: `polyvec_compress()` in the reference implementation @[REF]
- *            - In contrast to the reference implementation, we assume
- *              unsigned canonical coefficients here.
- *              The reference implementation works with coefficients
- *              in the range [-(MLKEM_Q-1), MLKEM_Q-1]. */
-MLK_INTERNAL_API
-void mlk_polyvec_compress_du(u8int r[MLKEM_POLYVECCOMPRESSEDBYTES_DU],
-                             const mlk_polyvec *a)
-{
-  unsigned i;
-
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_compress_du(r + i * MLKEM_POLYCOMPRESSEDBYTES_DU, &a->vec[i]);
-  }
-}
-
-/* Reference: `polyvec_decompress()` in the reference implementation @[REF]. */
-MLK_INTERNAL_API
-void mlk_polyvec_decompress_du(mlk_polyvec *r,
-                               const u8int a[MLKEM_POLYVECCOMPRESSEDBYTES_DU])
-{
-  unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_decompress_du(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_DU);
-  }
-
-}
+#define mlk_polyvec_frombytes MLK_NAMESPACE_K(polyvec_frombytes)
 
 /* Reference: `polyvec_tobytes()` in the reference implementation @[REF].
  *            - In contrast to the reference implementation, we assume
@@ -468,7 +354,7 @@ void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
  *              more random data than needed for the eta2 calls, to be
  *              be able to use a x4-batched Keccak-f1600. */
 MLK_INTERNAL_API
-void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
+void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   mlk_poly *r3,
                                   const u8int seed[MLKEM_SYMBYTES],
                                   u8int nonce0, u8int nonce1,
@@ -509,9 +395,3 @@ void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_zeroize(extkey, sizeof(extkey));
 }
 #endif /* MLKEM_K == 2 */
-
-/* To facilitate single-compilation-unit (SCU) builds, undefine all macros.
- * Don't modify by hand -- this is auto-generated by scripts/autogen. */
-#undef mlk_poly_cbd_eta1
-#undef mlk_poly_cbd_eta2
-#undef mlk_polyvec_basemul_acc_montgomery_cached_c
