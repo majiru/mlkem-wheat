@@ -26,10 +26,7 @@
 #include "fips202.h"
 #include "params.h"
 
-#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
 #define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
-#define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
-#define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
 #define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
 #define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
@@ -370,13 +367,13 @@ int mlk_indcpa_keypair_derand(u8int pk[MLKEM_INDCPA_PUBLICKEYBYTES],
   mlk_polyvec_ntt(MLKEM_K, skpv);
   mlk_polyvec_ntt(MLKEM_K, e);
 
-  mlk_polyvec_mulcache_compute(skpv_cache, skpv);
+  mlk_polyvec_mulcache_compute(MLKEM_K, skpv_cache, skpv);
   mlk_matvec_mul(pkpv, a, skpv, skpv_cache);
   mlk_polyvec_tomont(MLKEM_K, pkpv);
 
-  mlk_polyvec_add(pkpv, e);
-  mlk_polyvec_reduce(pkpv);
-  mlk_polyvec_reduce(skpv);
+  mlk_polyvec_add(MLKEM_K, pkpv, e);
+  mlk_polyvec_reduce(MLKEM_K, pkpv);
+  mlk_polyvec_reduce(MLKEM_K, skpv);
 
   mlk_pack_sk(sk, skpv);
   mlk_pack_pk(pk, pkpv, publicseed);
@@ -436,18 +433,18 @@ int mlk_indcpa_enc(u8int c[MLKEM_INDCPA_BYTES],
 
   mlk_polyvec_ntt(MLKEM_K, sp);
 
-  mlk_polyvec_mulcache_compute(sp_cache, sp);
+  mlk_polyvec_mulcache_compute(MLKEM_K, sp_cache, sp);
   mlk_matvec_mul(b, at, sp, sp_cache);
   mlk_polyvec_basemul_acc_montgomery_cached(v, pkpv, sp, sp_cache);
 
   mlk_polyvec_invntt_tomont(MLKEM_K, b);
   mlk_poly_invntt_tomont(v);
 
-  mlk_polyvec_add(b, ep);
+  mlk_polyvec_add(MLKEM_K, b, ep);
   mlk_poly_add(v, epp);
   mlk_poly_add(v, k);
 
-  mlk_polyvec_reduce(b);
+  mlk_polyvec_reduce(MLKEM_K, b);
   mlk_poly_reduce(v);
 
   mlk_pack_ciphertext(c, b, v);
@@ -493,7 +490,7 @@ int mlk_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
   mlk_unpack_sk(skpv, sk);
 
   mlk_polyvec_ntt(MLKEM_K, b);
-  mlk_polyvec_mulcache_compute(b_cache, b);
+  mlk_polyvec_mulcache_compute(MLKEM_K, b_cache, b);
   mlk_polyvec_basemul_acc_montgomery_cached(sb, skpv, b, b_cache);
   mlk_poly_invntt_tomont(sb);
 

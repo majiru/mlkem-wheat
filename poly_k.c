@@ -133,14 +133,56 @@ void mlk_polyvec_tomont(int level, mlk_polyvec *r)
   }
 
 }
+
+/* Reference: Does not exist in the reference implementation @[REF].
+ *            - The reference implementation does not use a
+ *              multiplication cache ('mulcache'). This idea originates
+ *              from @[NeonNTT] and is used at the C level here. */
+MLK_INTERNAL_API
+void mlk_polyvec_mulcache_compute(int level, mlk_polyvec_mulcache *x, const mlk_polyvec *a)
+{
+  unsigned i;
+  for (i = 0; i < level; i++)
+  {
+    mlk_poly_mulcache_compute(&x->vec[i], &a->vec[i]);
+  }
+}
+
+/* Reference: `polyvec_reduce()` in the reference implementation @[REF].
+ *            - We use _unsigned_ canonical outputs, while the reference
+ *              implementation uses _signed_ canonical outputs.
+ *              Accordingly, we need a conditional addition of MLKEM_Q
+ *              here to go from signed to unsigned representatives.
+ *              This conditional addition is then dropped from all
+ *              polynomial compression functions instead (see `compress.c`). */
+MLK_INTERNAL_API
+void mlk_polyvec_reduce(int level, mlk_polyvec *r)
+{
+  unsigned i;
+  for (i = 0; i < level; i++)
+  {
+    mlk_poly_reduce(&r->vec[i]);
+  }
+
+}
+
+/* Reference: `polyvec_add()` in the reference implementation @[REF].
+ *            - We use destructive version (output=first input) to avoid
+ *              reasoning about aliasing in the CBMC specification */
+MLK_INTERNAL_API
+void mlk_polyvec_add(int level, mlk_polyvec *r, const mlk_polyvec *b)
+{
+  unsigned i;
+  for (i = 0; i < level; i++)
+  {
+    mlk_poly_add(&r->vec[i], &b->vec[i]);
+  }
+}
 #endif
 
 #include "params.h"
 
-#define mlk_polyvec_reduce MLK_NAMESPACE_K(polyvec_reduce)
 #define mlk_polyvec_basemul_acc_montgomery_cached MLK_NAMESPACE_K(polyvec_basemul_acc_montgomery_cached)
-#define mlk_polyvec_mulcache_compute MLK_NAMESPACE_K(polyvec_mulcache_compute)
-#define mlk_polyvec_add MLK_NAMESPACE_K(polyvec_add)
 #define mlk_poly_getnoise_eta1_4x MLK_NAMESPACE_K(poly_getnoise_eta1_4x)
 #define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
 #define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
@@ -175,51 +217,6 @@ MLK_INTERNAL_API void mlk_polyvec_basemul_acc_montgomery_cached(
     }
     r->coeffs[2 * i + 0] = mlk_montgomery_reduce(t[0]);
     r->coeffs[2 * i + 1] = mlk_montgomery_reduce(t[1]);
-  }
-}
-
-/* Reference: Does not exist in the reference implementation @[REF].
- *            - The reference implementation does not use a
- *              multiplication cache ('mulcache'). This idea originates
- *              from @[NeonNTT] and is used at the C level here. */
-MLK_INTERNAL_API
-void mlk_polyvec_mulcache_compute(mlk_polyvec_mulcache *x, const mlk_polyvec *a)
-{
-  unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_mulcache_compute(&x->vec[i], &a->vec[i]);
-  }
-}
-
-/* Reference: `polyvec_reduce()` in the reference implementation @[REF].
- *            - We use _unsigned_ canonical outputs, while the reference
- *              implementation uses _signed_ canonical outputs.
- *              Accordingly, we need a conditional addition of MLKEM_Q
- *              here to go from signed to unsigned representatives.
- *              This conditional addition is then dropped from all
- *              polynomial compression functions instead (see `compress.c`). */
-MLK_INTERNAL_API
-void mlk_polyvec_reduce(mlk_polyvec *r)
-{
-  unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_reduce(&r->vec[i]);
-  }
-
-}
-
-/* Reference: `polyvec_add()` in the reference implementation @[REF].
- *            - We use destructive version (output=first input) to avoid
- *              reasoning about aliasing in the CBMC specification */
-MLK_INTERNAL_API
-void mlk_polyvec_add(mlk_polyvec *r, const mlk_polyvec *b)
-{
-  unsigned i;
-  for (i = 0; i < MLKEM_K; i++)
-  {
-    mlk_poly_add(&r->vec[i], &b->vec[i]);
   }
 }
 

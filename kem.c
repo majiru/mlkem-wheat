@@ -22,31 +22,15 @@
 #define _MLKEM1024_INDCCA_CIPHERTEXTBYTES (_MLKEM1024_INDCPA_BYTES)
 
 static int
-mlk_kem_check_pk(const u8int *pk, int n)
+mlk_kem_check_pk(int level, const u8int *pk)
 {
 	mlk_polyvec p;
 	u8int p_reencoded[_MLKEM_POLYVECBYTES(K1024)];
 
-	switch(n){
-	case _MLKEM_POLYVECBYTES(K512):
-		mlk_polyvec_frombytes(K512, &p, pk);
-		mlkem512_polyvec_reduce(&p);
-		mlk_polyvec_tobytes(K768, p_reencoded, &p);
-		break;
-	case _MLKEM_POLYVECBYTES(K768):
-		mlk_polyvec_frombytes(K768, &p, pk);
-		mlkem768_polyvec_reduce(&p);
-		mlk_polyvec_tobytes(K768, p_reencoded, &p);
-		break;
-	case _MLKEM_POLYVECBYTES(K1024):
-		mlk_polyvec_frombytes(K1024, &p, pk);
-		mlkem1024_polyvec_reduce(&p);
-		mlk_polyvec_tobytes(K1024, p_reencoded, &p);
-		break;
-	default:
-		abort();
-	}
-	return tsmemcmp(pk, p_reencoded, n) ? MLK_ERR_FAIL : 0;
+	mlk_polyvec_frombytes(level, &p, pk);
+	mlk_polyvec_reduce(level, &p);
+	mlk_polyvec_tobytes(level, p_reencoded, &p);
+	return tsmemcmp(pk, p_reencoded, _MLKEM_POLYVECBYTES(level)) ? MLK_ERR_FAIL : 0;
 }
 
 static
@@ -120,7 +104,7 @@ mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk)
 	}
 
 	/* Specification: Implements @[FIPS203, Section 7.2, Modulus check] */
-	ret = mlk_kem_check_pk(pk, _MLKEM_POLYVECBYTES(level));
+	ret = mlk_kem_check_pk(level, pk);
 	if(ret != 0)
 		goto cleanup;
 
