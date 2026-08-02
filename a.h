@@ -227,33 +227,13 @@ void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
 
 /***** indcpa.c  *****/
 
-int mlkem512_indcpa_keypair_derand(u8int pk[((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
+int mlk_indcpa_keypair_derand(int level, u8int pk[((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
                               u8int sk[((2 * MLKEM_POLYBYTES))],
                               const u8int coins[MLKEM_SYMBYTES]);
-int mlkem512_indcpa_enc(u8int c[((2 * MLKEM_POLYCOMPRESSEDBYTES_D10) + MLKEM_POLYCOMPRESSEDBYTES_D4)],
+int mlk_indcpa_enc(int level, u8int c[((2 * MLKEM_POLYCOMPRESSEDBYTES_D10) + MLKEM_POLYCOMPRESSEDBYTES_D4)],
                    const u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int pk[((2 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
                    const u8int coins[MLKEM_SYMBYTES]);
-int mlkem512_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
+int mlk_indcpa_dec(int level, u8int m[MLKEM_INDCPA_MSGBYTES],
                    const u8int c[((2 * MLKEM_POLYCOMPRESSEDBYTES_D10) + MLKEM_POLYCOMPRESSEDBYTES_D4)],
                    const u8int sk[((2 * MLKEM_POLYBYTES))]);
-int mlkem768_indcpa_keypair_derand(u8int pk[((3 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
-                              u8int sk[((3 * MLKEM_POLYBYTES))],
-                              const u8int coins[MLKEM_SYMBYTES]);
-int mlkem768_indcpa_enc(u8int c[((3 * MLKEM_POLYCOMPRESSEDBYTES_D10) + MLKEM_POLYCOMPRESSEDBYTES_D4)],
-                   const u8int m[MLKEM_INDCPA_MSGBYTES],
-                   const u8int pk[((3 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
-                   const u8int coins[MLKEM_SYMBYTES]);
-int mlkem768_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
-                   const u8int c[((3 * MLKEM_POLYCOMPRESSEDBYTES_D10) + MLKEM_POLYCOMPRESSEDBYTES_D4)],
-                   const u8int sk[((3 * MLKEM_POLYBYTES))]);
-int mlkem1024_indcpa_keypair_derand(u8int pk[((4 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
-                              u8int sk[((4 * MLKEM_POLYBYTES))],
-                              const u8int coins[MLKEM_SYMBYTES]);
-int mlkem1024_indcpa_enc(u8int c[((4 * MLKEM_POLYCOMPRESSEDBYTES_D11) + MLKEM_POLYCOMPRESSEDBYTES_D5)],
-                   const u8int m[MLKEM_INDCPA_MSGBYTES],
-                   const u8int pk[((4 * MLKEM_POLYBYTES) + MLKEM_SYMBYTES)],
-                   const u8int coins[MLKEM_SYMBYTES]);
-int mlkem1024_indcpa_dec(u8int m[MLKEM_INDCPA_MSGBYTES],
-                   const u8int c[((4 * MLKEM_POLYCOMPRESSEDBYTES_D11) + MLKEM_POLYCOMPRESSEDBYTES_D5)],
-                   const u8int sk[((4 * MLKEM_POLYBYTES))]);
