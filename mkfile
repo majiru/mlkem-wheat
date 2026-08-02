@@ -10,10 +10,10 @@ PORT=\
 	fips202-plan9.$O\
 	poly.$O\
 	kem.$O\
+	poly_k.$O\
 
 BASEFILES=\
 	indcpa.$O\
-	poly_k.$O\
 
 O512=\
 	${BASEFILES:%=build/mlkem512/%}\

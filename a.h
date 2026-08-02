@@ -217,17 +217,13 @@ void mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *
                                mlk_poly *r3, const u8int seed[MLKEM_SYMBYTES],
                                u8int nonce0, u8int nonce1, u8int nonce2,
                                u8int nonce3);
-
-void mlkem512_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
+void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
                             u8int nonce);
-void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
+void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   mlk_poly *r3,
                                   const u8int seed[MLKEM_SYMBYTES],
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3);
-
-void mlkem1024_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
-                            u8int nonce);
 
 /***** indcpa.c  *****/
 

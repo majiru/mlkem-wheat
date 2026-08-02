@@ -30,8 +30,6 @@
 #include "a.h"
 #include "fips202.h"
 
-#if MLK_CONFIG_PARAMETER_SET == 512
-
 #define _MLKEM_POLYVECBYTES(lvl) (lvl * MLKEM_POLYBYTES)
 
 /* Reference: `polyvec_compress()` in the reference implementation @[REF]
@@ -268,40 +266,6 @@ void mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *
   mlk_zeroize(buf, sizeof(buf));
   mlk_zeroize(extkey, sizeof(extkey));
 }
-#endif
-
-#include "params.h"
-
-#define mlk_prf_eta1(OUT, IN) mlk_prf_eta(MLKEM_ETA1, OUT, IN)
-#define mlk_prf_eta2(OUT, IN) mlk_prf_eta(MLKEM_ETA2, OUT, IN)
-
-#define mlk_poly_getnoise_eta2_4x mlk_poly_getnoise_eta1_4x
-#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-
-#if MLKEM_K == 2 || MLKEM_K == 4
-/**
- * Given an array of uniformly random bytes, compute a polynomial with
- * coefficients distributed according to a centered binomial distribution
- * with parameter MLKEM_ETA2.
- *
- * @spec{Implements @[FIPS203, Algorithm 8, SamplePolyCBD_eta2], where eta2
- * is specified per parameter set in @[FIPS203, Table 2] and represented as
- * MLKEM_ETA2 here.}
- *
- * @reference{`poly_cbd_eta2` in the reference implementation @[REF].}
- *
- * @param[out] r   Output polynomial.
- * @param[in]  buf Input byte array.
- */
-static void mlk_poly_cbd_eta2(
-    mlk_poly *r, const u8int buf[MLKEM_ETA2 * MLKEM_N / 4])
-{
-#if MLKEM_ETA2 == 2
-  mlk_poly_cbd2(r, buf);
-#else
-#error "Invalid value of MLKEM_ETA2"
-#endif
-}
 
 /* Reference: `poly_getnoise_eta2()` in the reference implementation @[REF].
  *            - We include buffer zeroization. */
@@ -314,9 +278,9 @@ void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
 
   mlk_memcpy(extkey, seed, MLKEM_SYMBYTES);
   extkey[MLKEM_SYMBYTES] = nonce;
-  mlk_prf_eta2(buf, extkey);
+  mlk_prf_eta(MLKEM_ETA2, buf, extkey);
 
-  mlk_poly_cbd_eta2(r, buf);
+  mlk_poly_cbd2(r, buf);
 
 
   /* Specification: Partially implements
@@ -324,9 +288,7 @@ void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
   mlk_zeroize(buf, sizeof(buf));
   mlk_zeroize(extkey, sizeof(extkey));
 }
-#endif /* MLKEM_K == 2 || MLKEM_K == 4 */
 
-#if MLKEM_K == 2
 /* Reference: Does not exist in the reference implementation @[REF].
  *            - This implements a x4-batched version of `poly_getnoise_eta1()`
  *              and `poly_getnoise_eta2()` from the reference implementation,
@@ -335,16 +297,13 @@ void mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES],
  *              more random data than needed for the eta2 calls, to be
  *              be able to use a x4-batched Keccak-f1600. */
 MLK_INTERNAL_API
-void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
+void mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
                                   mlk_poly *r3,
                                   const u8int seed[MLKEM_SYMBYTES],
                                   u8int nonce0, u8int nonce1,
                                   u8int nonce2, u8int nonce3)
 {
-#if MLKEM_ETA2 >= MLKEM_ETA1
-#error mlk_poly_getnoise_eta1122_4x assumes MLKEM_ETA1 > MLKEM_ETA2
-#endif
-  u8int buf[4][MLK_ALIGN_UP(MLKEM_ETA1 * MLKEM_N / 4)];
+  u8int buf[4][MLK_ALIGN_UP(3 * MLKEM_N / 4)];
   u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
 
   mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
@@ -359,15 +318,15 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   /* On systems with fast batched Keccak, we use 4-fold batched PRF,
    * even though that means generating more random data in buf[2] and buf[3]
    * than necessary. */
-  mlk_prf_eta1(buf[0], extkey[0]);
-  mlk_prf_eta1(buf[1], extkey[1]);
-  mlk_prf_eta2(buf[2], extkey[2]);
-  mlk_prf_eta2(buf[3], extkey[3]);
+  mlk_prf_eta(1, buf[0], extkey[0]);
+  mlk_prf_eta(1, buf[1], extkey[1]);
+  mlk_prf_eta(2, buf[2], extkey[2]);
+  mlk_prf_eta(2, buf[3], extkey[3]);
 
   mlk_poly_cbd3(r0, buf[0]);
   mlk_poly_cbd3(r1, buf[1]);
-  mlk_poly_cbd_eta2(r2, buf[2]);
-  mlk_poly_cbd_eta2(r3, buf[3]);
+  mlk_poly_cbd2(r2, buf[2]);
+  mlk_poly_cbd2(r3, buf[3]);
 
 
   /* Specification: Partially implements
@@ -375,4 +334,3 @@ void mlkem512_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2,
   mlk_zeroize(buf, sizeof(buf));
   mlk_zeroize(extkey, sizeof(extkey));
 }
-#endif /* MLKEM_K == 2 */

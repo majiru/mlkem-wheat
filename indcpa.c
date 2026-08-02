@@ -26,8 +26,6 @@
 #include "fips202.h"
 #include "params.h"
 
-#define mlk_poly_getnoise_eta2 MLK_NAMESPACE_K(poly_getnoise_eta2)
-
 #define mlk_indcpa_keypair_derand MLK_NAMESPACE_K(indcpa_keypair_derand)
 #define mlk_indcpa_enc MLK_NAMESPACE_K(indcpa_enc)
 #define mlk_indcpa_dec MLK_NAMESPACE_K(indcpa_dec)
@@ -296,7 +294,7 @@ static void mlk_enc_getnoise_eta1_eta2(mlk_polyvec *sp, mlk_polyvec *ep,
                                        const u8int coins[MLKEM_SYMBYTES])
 {
 #if MLKEM_K == 2
-  mlkem512_poly_getnoise_eta1122_4x(&sp->vec[0], &sp->vec[1], &ep->vec[0],
+  mlk_poly_getnoise_eta1122_4x(&sp->vec[0], &sp->vec[1], &ep->vec[0],
                                &ep->vec[1], coins, 0, 1, 2, 3);
   mlk_poly_getnoise_eta2(epp, coins, 4);
 #elif MLKEM_K == 3
