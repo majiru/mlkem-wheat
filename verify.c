@@ -9,110 +9,6 @@
 
 #include "a.h"
 
-/*
- * Masking value used in constant-time functions from
- * verify.h to block the compiler's range analysis and
- * thereby reduce the risk of compiler-introduced branches.
- */
-volatile u64int mlk_ct_opt_blocker_u64 = 0;
-
-/* Helper functions for obtaining global masks of various sizes */
-
-/* This contract is not proved but treated as an axiom.
- *
- * Its validity relies on the assumption that the global opt-blocker
- * constant mlk_ct_opt_blocker_u64 is not modified.
- */
-u64int mlk_ct_get_optblocker_u64(void)
-{ return mlk_ct_opt_blocker_u64; }
-
-u8int mlk_ct_get_optblocker_u8(void)
-{ return (u8int)mlk_ct_get_optblocker_u64(); }
-
-u32int mlk_ct_get_optblocker_u32(void)
-{ return (u32int)mlk_ct_get_optblocker_u64(); }
-
-s32int mlk_ct_get_optblocker_i32(void)
-{ return (s32int)mlk_ct_get_optblocker_u64(); }
-
-/* Opt-blocker based implementation of value barriers */
-u32int mlk_value_barrier_u32(u32int b)
-{ return (b ^ mlk_ct_get_optblocker_u32()); }
-
-s32int mlk_value_barrier_i32(s32int b)
-{ return (b ^ mlk_ct_get_optblocker_i32()); }
-
-u8int mlk_value_barrier_u8(u8int b)
-{ return (b ^ mlk_ct_get_optblocker_u8()); }
-
-/**
- * Cast uint16 value to int16.
- *
- * @param x Input value.
- *
- * @return For u16int x, the unique y in s16int so that x == y mod 2^16.
- *         Concretely:
- *         - x <  32768: returns x
- *         - x >= 32768: returns x - 65536
- */
-s16int mlk_cast_u16into_int16(u16int x)
-{
-  /*
-   * PORTABILITY: This relies on u16int -> s16int
-   * being implemented as the inverse of s16int -> u16int,
-   * which is implementation-defined (C99 6.3.1.3 (3))
-   * CBMC (correctly) fails to prove this conversion is OK,
-   * so we have to suppress that check here
-   */
-  return (s16int)x;
-}
-
-/**
- * Cast int32 value to uint16 as per C standard.
- *
- * @param x Input value.
- *
- * @return For s32int x, the unique y in u16int so that x == y mod 2^16.
- */
-u16int mlk_cast_s32into_uint16(s32int x)
-{
-  return (u16int)(x & (s32int)0xffff);
-}
-
-/**
- * Cast int16 value to uint16 as per C standard.
- *
- * @param x Input value.
- *
- * @return For s16int x, the unique y in u16int so that x == y mod 2^16.
- */
-u16int mlk_cast_s16into_uint16(s32int x)
-{
-  return mlk_cast_s32into_uint16((s32int)x);
-}
-
-/**
- * Return 0 if input is non-negative, and -1 otherwise.
- *
- * @reference{Embedded in the polynomial compression function in the
- * reference implementation @[REF]. Used as part of signed->unsigned
- * conversion for modular representatives to detect whether the input is
- * negative. This happens in `mlk_poly_reduce()` here, and as part of
- * polynomial compression functions in the reference implementation. See
- * `mlk_poly_reduce()`. We use value barriers to reduce the risk of
- * compiler-introduced branches.}
- *
- * @param x Value to be converted into a mask.
- *
- * @return Mask value (0 or 0xFFFF).
- */
-u16int mlk_ct_cmask_neg_i16(s16int x)
-{
-  s32int tmp = mlk_value_barrier_i32((s32int)x);
-  tmp >>= 16;
-  return mlk_cast_s32into_uint16(tmp);
-}
-
 /**
  * Return 0 if input is zero, and -1 otherwise.
  *
@@ -126,9 +22,9 @@ u16int mlk_ct_cmask_neg_i16(s16int x)
  */
 u16int mlk_ct_cmask_nonzero_u16(u16int x)
 {
-  s32int tmp = mlk_value_barrier_i32(-((s32int)x));
+  s32int tmp = -((s32int)x);
   tmp >>= 16;
-  return mlk_cast_s32into_uint16(tmp);
+  return (u16int)(tmp & (s32int)0xffff);
 }
 
 /**
@@ -178,10 +74,10 @@ u8int mlk_ct_cmask_nonzero_u8(u8int x)
  */
 s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond)
 {
-  u16int au = mlk_cast_s16into_uint16(a);
-  u16int bu = mlk_cast_s16into_uint16(b);
+  u16int au = (u16int)(((s32int)a) & (s32int)0xffff);
+  u16int bu = (u16int)(((s32int)b) & (s32int)0xffff);
   u16int res = bu ^ (mlk_ct_cmask_nonzero_u16(cond) & (au ^ bu));
-  return mlk_cast_u16into_int16(res);
+  return (s16int)res;
 }
 
 /**
