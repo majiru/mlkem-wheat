@@ -62,7 +62,7 @@ static void surf(void)
   }
 }
 
-int mlk_randombytes(u8int *buf, ulong n)
+void genrandom(u8int *buf, int n)
 {
   while (n > 0)
   {
@@ -85,5 +85,4 @@ int mlk_randombytes(u8int *buf, ulong n)
     ++buf;
     --n;
   }
-  return 0;
 }

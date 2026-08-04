@@ -16,7 +16,7 @@ CLEANFILES=$OFILES $LIB $PORT
 </sys/src/cmd/mkone
 
 
-$LIB:V:	$PORT randombytes.$O
+$LIB:V:	$PORT
 	ar vu $LIB $newprereq
 
 &:n:	&.$O

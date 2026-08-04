@@ -8,7 +8,8 @@
 #include <stdio.h>
 
 #include "mlkem_native.h"
-#include "notrandombytes.h"
+
+void randombytes_reset(void);
 
 #define CHECK(x) assert(x)
 

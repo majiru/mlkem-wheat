@@ -120,8 +120,6 @@ typedef struct {
 #define _MLKEM768_INDCCA_CIPHERTEXTBYTES (_MLKEM768_INDCPA_BYTES)
 #define _MLKEM1024_INDCCA_CIPHERTEXTBYTES (_MLKEM1024_INDCPA_BYTES)
 
-int mlk_randombytes(u8int *out, ulong outlen);
-
 /**
  * Generic Montgomery reduction; given a 32-bit integer a, computes a 16-bit
  * integer congruent to a * R^-1 mod MLKEM_Q, where R=2^16.
@@ -1667,10 +1665,7 @@ mlk_kem_keypair_x(int level, u8int *pk, u8int *sk)
 	int ret;
 	u8int coins[2 * MLKEM_SYMBYTES];
 
-	if(mlk_randombytes(coins, sizeof coins) != 0){
-		ret = MLK_ERR_RNG_FAIL;
-		goto cleanup;
-	}
+	genrandom(coins, sizeof coins);
 
 	ret = mlk_indcpa_keypair_derand(level, pk, sk, coins);
 	if(ret != 0)
@@ -1699,10 +1694,7 @@ mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk)
 	u8int buf[2 * MLKEM_SYMBYTES];
 	u8int kr[2 * MLKEM_SYMBYTES];
 
-	if(mlk_randombytes(coins, MLKEM_SYMBYTES) != 0){
-		ret = MLK_ERR_RNG_FAIL;
-		goto cleanup;
-	}
+	genrandom(coins, MLKEM_SYMBYTES);
 
 	/* Specification: Implements @[FIPS203, Section 7.2, Modulus check] */
 	ret = mlk_kem_check_pk(level, pk);
