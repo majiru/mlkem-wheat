@@ -7,8 +7,6 @@
 #include <mp.h>
 #include <libsec.h>
 
-#include "a.h"
-
 /**
  * Return 0 if input is zero, and -1 otherwise.
  *
@@ -86,10 +84,6 @@ s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond)
  *
  * @reference{Embedded into `cmov()` in the reference implementation @[REF].
  * Uses a value barrier to get mask from condition value.}
- *
- * @param a    First alternative.
- * @param b    Second alternative.
- * @param cond Condition variable.
  *
  * @return @p a if @p cond != 0, else @p b.
  */

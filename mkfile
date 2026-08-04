@@ -4,12 +4,7 @@ LIB=mlkem.$objtype.a
 CFLAGS=-FTVw
 
 PORT=\
-	sampling.$O\
-	compress.$O\
-	poly.$O\
-	kem.$O\
-	poly_k.$O\
-	indcpa.$O\
+	mlkem.$O\
 	verify.$O\
 
 OFILES=\

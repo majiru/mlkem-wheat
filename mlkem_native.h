@@ -1,19 +1,3 @@
-/*
- * Copyright (c) The mlkem-native project authors
- * SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
- */
-
-/* References
- * ==========
- *
- * - [FIPS203]
- *   FIPS 203 Module-Lattice-Based Key-Encapsulation Mechanism Standard
- *   National Institute of Standards and Technology
- *   https://csrc.nist.gov/pubs/fips/203/final
- */
-
-/******************************* Key sizes ************************************/
-
 #define MLKEM512_SECRETKEYBYTES 1632
 #define MLKEM512_PUBLICKEYBYTES 800
 #define MLKEM512_CIPHERTEXTBYTES 768
@@ -31,8 +15,6 @@
 #define MLKEM512_BYTES MLKEM_BYTES
 #define MLKEM768_BYTES MLKEM_BYTES
 #define MLKEM1024_BYTES MLKEM_BYTES
-
-/****************************** Error codes ***********************************/
 
 /* Generic failure condition */
 #define MLK_ERR_FAIL -1
