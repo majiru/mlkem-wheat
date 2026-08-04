@@ -149,10 +149,10 @@ mlk_montgomery_reduce(s32int a)
 	 * we assume it's sign-preserving "arithmetic" shift right. (C99 6.5.7 (5))
 	 */
 	r = r >> 16;
+
 	/* Bounds: |r >> 16| <= ceil(|r| / 2^16)
-	 *									 <= ceil(|a| / 2^16 + MLKEM_Q / 2)
-	 *									 <= ceil(|a| / 2^16) + (MLKEM_Q + 1) / 2
-	 *
+	 *	<= ceil(|a| / 2^16 + MLKEM_Q / 2)
+	 *	<= ceil(|a| / 2^16) + (MLKEM_Q + 1) / 2
 	 * (Note that |a >> n| = ceil(|a| / 2^16) for negative a)
 	 */
 	return (s16int)r;
