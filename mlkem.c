@@ -16,10 +16,8 @@ enum{
 #define MLKEM_N 256
 #define MLKEM_Q 3329
 #define MLKEM_Q_HALF ((MLKEM_Q + 1) / 2) /* 1665 */
-#define MLKEM_UINT12_LIMIT 4096
 
 #define MLKEM_SYMBYTES 32 /* size in bytes of hashes, and seeds */
-#define MLKEM_SSBYTES 32  /* size in bytes of shared key */
 
 #define MLKEM_POLYBYTES 384
 
@@ -31,12 +29,6 @@ enum{
 #define MLKEM_ETA2 2
 
 #define MLKEM_INDCPA_MSGBYTES (MLKEM_SYMBYTES)
-
-/* Standard library function replacements */
-#define mlk_memcpy memcpy
-#define mlk_memset memset
-
-/* Default: stack allocation */
 
 #define MLK_ALLOC(v, T, N) \
   T *v = malloc(N * sizeof(T));
@@ -59,7 +51,6 @@ enum{
  * system misconfiguration. */
 #define MLK_ERR_RNG_FAIL -3
 
-#define mlk_ct_memcmp tsmemcmp
 #define mlk_zeroize(ptr, len) memset(ptr, 0, len)
 
 s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond);
@@ -1170,10 +1161,10 @@ mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, m
 {
 	u8int buf[4][MLK_ALIGN_UP(3 * MLKEM_N / 4)];
 	u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
-	mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[1], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[2], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[3], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[0], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[1], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[2], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[3], seed, MLKEM_SYMBYTES);
 	extkey[0][MLKEM_SYMBYTES] = nonce0;
 	extkey[1][MLKEM_SYMBYTES] = nonce1;
 	extkey[2][MLKEM_SYMBYTES] = nonce2;
@@ -1223,7 +1214,7 @@ mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES], u8int nonc
 	u8int buf[MLKEM_ETA2 * MLKEM_N / 4];
 	u8int extkey[MLKEM_SYMBYTES + 1];
 
-	mlk_memcpy(extkey, seed, MLKEM_SYMBYTES);
+	memcpy(extkey, seed, MLKEM_SYMBYTES);
 	extkey[MLKEM_SYMBYTES] = nonce;
 	mlk_prf_eta(MLKEM_ETA2, buf, extkey);
 
@@ -1249,10 +1240,10 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 	u8int buf[4][MLK_ALIGN_UP(3 * MLKEM_N / 4)];
 	u8int extkey[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 1)];
 
-	mlk_memcpy(extkey[0], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[1], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[2], seed, MLKEM_SYMBYTES);
-	mlk_memcpy(extkey[3], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[0], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[1], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[2], seed, MLKEM_SYMBYTES);
+	memcpy(extkey[3], seed, MLKEM_SYMBYTES);
 	extkey[0][MLKEM_SYMBYTES] = nonce0;
 	extkey[1][MLKEM_SYMBYTES] = nonce1;
 	extkey[2][MLKEM_SYMBYTES] = nonce2;
@@ -1287,7 +1278,7 @@ static void
 mlk_pack_pk(int level, u8int *r, const mlk_polyvec *pk, const u8int seed[MLKEM_SYMBYTES])
 {
 	mlk_polyvec_tobytes(level, r, pk);
-	mlk_memcpy(r + _MLKEM_POLYVECBYTES(level), seed, MLKEM_SYMBYTES);
+	memcpy(r + _MLKEM_POLYVECBYTES(level), seed, MLKEM_SYMBYTES);
 }
 
 /**
@@ -1299,7 +1290,7 @@ static void
 mlk_unpack_pk(int level, mlk_polyvec *pk, u8int seed[MLKEM_SYMBYTES], const u8int *packedpk)
 {
 	mlk_polyvec_frombytes(level, pk, packedpk);
-	mlk_memcpy(seed, packedpk + _MLKEM_POLYVECBYTES(level), MLKEM_SYMBYTES);
+	memcpy(seed, packedpk + _MLKEM_POLYVECBYTES(level), MLKEM_SYMBYTES);
 }
 
 /**
@@ -1363,7 +1354,7 @@ mlk_gen_matrix(int level, mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES], int 
 	u8int seed_ext[4][MLK_ALIGN_UP(MLKEM_SYMBYTES + 2)];
 
 	for(j = 0; j < 4; j++)
-		mlk_memcpy(seed_ext[j], seed, MLKEM_SYMBYTES);
+		memcpy(seed_ext[j], seed, MLKEM_SYMBYTES);
 
 	/* When using serial FIPS202, sample all entries individually. */
 	i = 0;
@@ -1496,7 +1487,7 @@ mlk_indcpa_keypair_derand(int level, u8int *pk, u8int *sk, const u8int coins[MLK
 	noiseseed = buf + MLKEM_SYMBYTES;
 
 	/* Concatenate coins with MLKEM_K for domain separation of security levels */
-	mlk_memcpy(coins_with_domain_separator, coins, MLKEM_SYMBYTES);
+	memcpy(coins_with_domain_separator, coins, MLKEM_SYMBYTES);
 	coins_with_domain_separator[MLKEM_SYMBYTES] = level;
 
 	mlk_hash_g(buf, coins_with_domain_separator, MLKEM_SYMBYTES + 1);
@@ -1771,21 +1762,21 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 
 	switch(level){
 	case K512:
-		fail = mlk_ct_memcmp(ct, tmp, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
+		fail = tsmemcmp(ct, tmp, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K512) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM512_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K768:
-		fail = mlk_ct_memcmp(ct, tmp, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
+		fail = tsmemcmp(ct, tmp, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K768) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		mlk_hash_j(ss, tmp, MLKEM_SYMBYTES + _MLKEM768_INDCCA_CIPHERTEXTBYTES);
 		break;
 	case K1024:
-		fail = mlk_ct_memcmp(ct, tmp, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
+		fail = tsmemcmp(ct, tmp, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
 		/* Compute rejection key */
 		memcpy(tmp, sk + _MLKEM_INDCCA_SECRETKEYBYTES(K1024) - MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 		memcpy(tmp + MLKEM_SYMBYTES, ct, _MLKEM1024_INDCCA_CIPHERTEXTBYTES);
