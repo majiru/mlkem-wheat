@@ -9,7 +9,6 @@ PORT=\
 
 OFILES=\
 	main.$O\
-	notrandombytes.$O\
 
 CLEANFILES=$OFILES $LIB $PORT
 
