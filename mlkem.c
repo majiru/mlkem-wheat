@@ -427,7 +427,7 @@ mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 
 	memset(&state, 0, sizeof state);
 	shake_128_in(seed, MLKEM_SYMBYTES + 2, &state.d);
-	shake_128_convert(&state.x, &state.d);
+	shake_128_conv(&state.x, &state.d);
 
 	/* Initially, squeeze + sample heuristic number of MLKEM_GEN_MATRIX_NBLOCKS. */
 	/* This should generate the matrix entry with high probability. */
