@@ -2,6 +2,19 @@
 #include <libc.h>
 #include <stdio.h>
 
+/* expose some internals for testing */
+enum{
+	K512 = 2,
+	K768,
+	K1024,
+};
+
+#define MLKEM_SYMBYTES 32 /* size in bytes of hashes, and seeds */
+
+int mlk_kem_keypair_x(int level, u8int *pk, u8int *sk, u8int *coins);
+int mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk, u8int *coins);
+
+#include "expected_test_vectors_multilevel.h"
 #include "mlkem_native.h"
 
 static u32int seed[32] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3,
@@ -88,189 +101,207 @@ void genrandom(u8int *buf, int n)
   }
 }
 
-#define CHECK(x) assert(x)
+#define CHECK assert
 
-static int test_keys_mlkem512(void)
+static int example_mlkem512_keygen(void)
 {
-  /* The PCT modifies the PRNG state, so the KAT tests don't work.
-   * We run KAT tests only for disabled PCT. */
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  const u8int expected_key[] = {
-      0x77, 0x6c, 0x74, 0xdf, 0x30, 0x1f, 0x8d, 0x82, 0x52, 0x5e, 0x8e,
-      0xbb, 0xb4, 0x00, 0x95, 0xcd, 0x2e, 0x92, 0xdf, 0x6d, 0xc9, 0x33,
-      0xe7, 0x86, 0x62, 0x59, 0xf5, 0x31, 0xc7, 0x35, 0x0a, 0xd5};
-#endif /* !MLK_CONFIG_KEYGEN_PCT */
+  uchar pk[MLKEM512_PUBLICKEYBYTES];
+  uchar sk[MLKEM512_SECRETKEYBYTES];
+  uchar coins[2 * MLKEM_SYMBYTES];
 
-  u8int pk[MLKEM512_PUBLICKEYBYTES];
-  u8int sk[MLKEM512_SECRETKEYBYTES];
-  u8int ct[MLKEM512_CIPHERTEXTBYTES];
-  u8int key_a[MLKEM512_BYTES];
-  u8int key_b[MLKEM512_BYTES];
-
-  /* WARNING: Test-only
-   * Normally, you would want to seed a PRNG with trustworthy entropy here. */
-  randombytes_reset();
-
-  /* Alice generates a public key */
+  printf("  Generating keypair (randomized)... ");
   CHECK(mlkem512_keypair(pk, sk) == 0);
+  CHECK(memcmp(pk, test_vector_pk_512, MLKEM512_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_512, MLKEM512_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
 
-  /* Bob derives a secret key and creates a response */
-  CHECK(mlkem512_enc(ct, key_b, pk) == 0);
-
-  /* Alice uses Bobs response to get her shared key */
-  CHECK(mlkem512_dec(key_a, ct, sk) == 0);
-
-  CHECK(memcmp(key_a, key_b, MLKEM512_BYTES) == 0);
-
-  printf("Shared secret: ");
-  {
-    ulong i;
-    for (i = 0; i < sizeof(key_a); i++)
-    {
-      printf("%02x", key_a[i]);
-    }
-  }
-  printf("\n");
-
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  /* Check against hardcoded result to make sure that
-   * we integrated custom FIPS202 correctly */
-  CHECK(memcmp(key_a, expected_key, sizeof(key_a)) == 0);
-#else
-  printf(
-      "[WARNING] Skipping KAT test since PCT is enabled and modifies PRNG\n");
-#endif
-
-  printf("[MLKEM-512] OK\n");
+  printf("  Generating keypair (deterministic)... ");
+  memcpy(coins, test_vector_d, MLKEM_SYMBYTES);
+  memcpy(coins + MLKEM_SYMBYTES, test_vector_z, MLKEM_SYMBYTES);
+  CHECK(mlk_kem_keypair_x(K512, pk, sk, coins) == 0);
+  CHECK(memcmp(pk, test_vector_pk_512, MLKEM512_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_512, MLKEM512_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
   return 0;
 }
 
-static int test_keys_mlkem768(void)
+static int example_mlkem768_keygen(void)
 {
-  /* The PCT modifies the PRNG state, so the KAT tests don't work.
-   * We run KAT tests only for disabled PCT. */
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  const u8int expected_key[] = {
-      0xe9, 0x13, 0x77, 0x84, 0x0e, 0x6b, 0x66, 0x94, 0xea, 0xa9, 0xf0,
-      0x1c, 0x97, 0xff, 0x68, 0x87, 0x4e, 0x8b, 0x0c, 0x52, 0x0b, 0x00,
-      0xc2, 0xcd, 0xe3, 0x7c, 0x4f, 0xc2, 0x39, 0x62, 0x6e, 0x70};
-#endif /* !MLK_CONFIG_KEYGEN_PCT */
+  uchar pk[MLKEM768_PUBLICKEYBYTES];
+  uchar sk[MLKEM768_SECRETKEYBYTES];
+  uchar coins[2 * MLKEM_SYMBYTES];
 
-  u8int pk[MLKEM768_PUBLICKEYBYTES];
-  u8int sk[MLKEM768_SECRETKEYBYTES];
-  u8int ct[MLKEM768_CIPHERTEXTBYTES];
-  u8int key_a[MLKEM768_BYTES];
-  u8int key_b[MLKEM768_BYTES];
-
-  /* WARNING: Test-only
-   * Normally, you would want to seed a PRNG with trustworthy entropy here. */
-  randombytes_reset();
-
-  /* Alice generates a public key */
+  printf("  Generating keypair (randomized)... ");
   CHECK(mlkem768_keypair(pk, sk) == 0);
+  CHECK(memcmp(pk, test_vector_pk_768, MLKEM768_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_768, MLKEM768_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
 
-  /* Bob derives a secret key and creates a response */
-  CHECK(mlkem768_enc(ct, key_b, pk) == 0);
-
-  /* Alice uses Bobs response to get her shared key */
-  CHECK(mlkem768_dec(key_a, ct, sk) == 0);
-
-  CHECK(memcmp(key_a, key_b, MLKEM768_BYTES) == 0);
-
-  printf("Shared secret: ");
-  {
-    ulong i;
-    for (i = 0; i < sizeof(key_a); i++)
-    {
-      printf("%02x", key_a[i]);
-    }
-  }
-  printf("\n");
-
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  /* Check against hardcoded result to make sure that
-   * we integrated custom FIPS202 correctly */
-  CHECK(memcmp(key_a, expected_key, sizeof(key_a)) == 0);
-#else
-  printf(
-      "[WARNING] Skipping KAT test since PCT is enabled and modifies PRNG\n");
-#endif
-
-  printf("[MLKEM-768] OK\n");
+  printf("  Generating keypair (deterministic)... ");
+  memcpy(coins, test_vector_d, MLKEM_SYMBYTES);
+  memcpy(coins + MLKEM_SYMBYTES, test_vector_z, MLKEM_SYMBYTES);
+  CHECK(mlk_kem_keypair_x(K768, pk, sk, coins) == 0);
+  CHECK(memcmp(pk, test_vector_pk_768, MLKEM768_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_768, MLKEM768_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
   return 0;
 }
 
-
-static int test_keys_mlkem1024(void)
+static int example_mlkem1024_keygen(void)
 {
-  /* The PCT modifies the PRNG state, so the KAT tests don't work.
-   * We run KAT tests only for disabled PCT. */
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  const u8int expected_key[] = {
-      0x5d, 0x9e, 0x23, 0x5f, 0xcc, 0xb2, 0xb3, 0x49, 0x9a, 0x5f, 0x49,
-      0x0a, 0x56, 0xe3, 0xf0, 0xd3, 0xfd, 0x9b, 0x58, 0xbd, 0xa2, 0x8b,
-      0x69, 0x0f, 0x91, 0xb5, 0x7b, 0x88, 0xa5, 0xa8, 0x0b, 0x90};
-#endif /* !MLK_CONFIG_KEYGEN_PCT */
-  u8int pk[MLKEM1024_PUBLICKEYBYTES];
-  u8int sk[MLKEM1024_SECRETKEYBYTES];
-  u8int ct[MLKEM1024_CIPHERTEXTBYTES];
-  u8int key_a[MLKEM1024_BYTES];
-  u8int key_b[MLKEM1024_BYTES];
+  uchar pk[MLKEM1024_PUBLICKEYBYTES];
+  uchar sk[MLKEM1024_SECRETKEYBYTES];
+  uchar coins[2 * MLKEM_SYMBYTES];
 
-  /* WARNING: Test-only
-   * Normally, you would want to seed a PRNG with trustworthy entropy here. */
-  randombytes_reset();
-
-  /* Alice generates a public key */
+  printf("  Generating keypair (randomized)... ");
   CHECK(mlkem1024_keypair(pk, sk) == 0);
+  CHECK(memcmp(pk, test_vector_pk_1024, MLKEM1024_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_1024, MLKEM1024_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
 
-  /* Bob derives a secret key and creates a response */
-  CHECK(mlkem1024_enc(ct, key_b, pk) == 0);
+  printf("  Generating keypair (deterministic)... ");
+  memcpy(coins, test_vector_d, MLKEM_SYMBYTES);
+  memcpy(coins + MLKEM_SYMBYTES, test_vector_z, MLKEM_SYMBYTES);
+  CHECK(mlk_kem_keypair_x(K1024, pk, sk, coins) == 0);
+  CHECK(memcmp(pk, test_vector_pk_1024, MLKEM1024_PUBLICKEYBYTES) == 0);
+  CHECK(memcmp(sk, test_vector_sk_1024, MLKEM1024_SECRETKEYBYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
 
-  /* Alice uses Bobs response to get her shared key */
-  CHECK(mlkem1024_dec(key_a, ct, sk) == 0);
+/* Encaps examples */
 
-  CHECK(memcmp(key_a, key_b, MLKEM1024_BYTES) == 0);
+static int example_mlkem512_encaps(void)
+{
+  uchar ct[MLKEM512_CIPHERTEXTBYTES];
+  uchar ss[MLKEM512_BYTES];
 
-  printf("Shared secret: ");
-  {
-    ulong i;
-    for (i = 0; i < sizeof(key_a); i++)
-    {
-      printf("%02x", key_a[i]);
-    }
-  }
-  printf("\n");
+  printf("  Encaps (randomized)... ");
+  CHECK(mlkem512_enc(ct, ss, test_vector_pk_512) == 0);
+  CHECK(memcmp(ct, test_vector_ct_512, MLKEM512_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_512, MLKEM512_BYTES) == 0);
+  printf("DONE\n");
 
-#ifndef MLK_CONFIG_KEYGEN_PCT
-  /* Check against hardcoded result to make sure that
-   * we integrated custom FIPS202 correctly */
-  CHECK(memcmp(key_a, expected_key, sizeof(key_a)) == 0);
-#else
-  printf(
-      "[WARNING] Skipping KAT test since PCT is enabled and modifies PRNG\n");
-#endif
+  printf("  Encaps (deterministic)... ");
+  CHECK(mlk_kem_enc_x(K512, ct, ss, test_vector_pk_512, test_vector_m) == 0);
+  CHECK(memcmp(ct, test_vector_ct_512, MLKEM512_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_512, MLKEM512_BYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
 
-  printf("[MLKEM-1024] OK\n");
+static int example_mlkem768_encaps(void)
+{
+  uchar ct[MLKEM768_CIPHERTEXTBYTES];
+  uchar ss[MLKEM768_BYTES];
+
+  printf("  Encaps (randomized)... ");
+  CHECK(mlkem768_enc(ct, ss, test_vector_pk_768) == 0);
+  CHECK(memcmp(ct, test_vector_ct_768, MLKEM768_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_768, MLKEM768_BYTES) == 0);
+  printf("DONE\n");
+
+  printf("  Encaps (deterministic)... ");
+  CHECK(mlk_kem_enc_x(K768, ct, ss, test_vector_pk_768, test_vector_m) == 0);
+  CHECK(memcmp(ct, test_vector_ct_768, MLKEM768_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_768, MLKEM768_BYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
+
+static int example_mlkem1024_encaps(void)
+{
+  uchar ct[MLKEM1024_CIPHERTEXTBYTES];
+  uchar ss[MLKEM1024_BYTES];
+
+  printf("  Encaps (randomized)... ");
+  CHECK(mlkem1024_enc(ct, ss, test_vector_pk_1024) == 0);
+  CHECK(memcmp(ct, test_vector_ct_1024, MLKEM1024_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_1024, MLKEM1024_BYTES) == 0);
+  printf("DONE\n");
+
+  printf("  Encaps (deterministic)... ");
+  CHECK(mlk_kem_enc_x(K1024, ct, ss, test_vector_pk_1024, test_vector_m) == 0);
+  CHECK(memcmp(ct, test_vector_ct_1024, MLKEM1024_CIPHERTEXTBYTES) == 0);
+  CHECK(memcmp(ss, test_vector_ss_1024, MLKEM1024_BYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
+
+/* Decaps examples */
+
+static int example_mlkem512_decaps(void)
+{
+  uchar ss[MLKEM512_BYTES];
+
+  printf("  Decaps... ");
+  CHECK(mlkem512_dec(ss, test_vector_ct_512, test_vector_sk_512) == 0);
+  CHECK(memcmp(ss, test_vector_ss_512, MLKEM512_BYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
+
+static int example_mlkem768_decaps(void)
+{
+  uchar ss[MLKEM768_BYTES];
+
+  printf("  Decaps... ");
+  CHECK(mlkem768_dec(ss, test_vector_ct_768, test_vector_sk_768) == 0);
+  CHECK(memcmp(ss, test_vector_ss_768, MLKEM768_BYTES) == 0);
+  printf("DONE\n");
+  return 0;
+}
+
+static int example_mlkem1024_decaps(void)
+{
+  uchar ss[MLKEM1024_BYTES];
+
+  printf("  Decaps... ");
+  CHECK(mlkem1024_dec(ss, test_vector_ct_1024, test_vector_sk_1024) == 0);
+  CHECK(memcmp(ss, test_vector_ss_1024, MLKEM1024_BYTES) == 0);
+  printf("DONE\n");
   return 0;
 }
 
 int main(void)
 {
-  if (test_keys_mlkem512() != 0)
+  int r = 0;
+
+  printf("ML-KEM multilevel_build Example\n");
+  printf("======================\n\n");
+
+  printf("ML-KEM-512\n");
+  /* WARNING: Test-only
+   * Normally, you would want to seed a PRNG with trustworthy entropy here. */
+  randombytes_reset();
+  r |= example_mlkem512_keygen();
+  /* WARNING: Test-only
+   * Normally, you would seed a PRNG _once_ with trustworthy entropy
+   * and not reseed it afterwards. Here, we reseed to make tests
+   * independent and reproducible. */
+  randombytes_reset();
+  r |= example_mlkem512_encaps();
+  r |= example_mlkem512_decaps();
+
+  printf("\nML-KEM-768\n");
+  randombytes_reset();
+  r |= example_mlkem768_keygen();
+  randombytes_reset();
+  r |= example_mlkem768_encaps();
+  r |= example_mlkem768_decaps();
+
+  printf("\nML-KEM-1024\n");
+  randombytes_reset();
+  r |= example_mlkem1024_keygen();
+  randombytes_reset();
+  r |= example_mlkem1024_encaps();
+  r |= example_mlkem1024_decaps();
+
+  if (r)
   {
     return 1;
   }
 
-  if (test_keys_mlkem768() != 0)
-  {
-    return 1;
-  }
-
-  if (test_keys_mlkem1024() != 0)
-  {
-    return 1;
-  }
-
-  exits(0);
+  printf("\nAll tests passed!\n");
+  return 0;
 }
