@@ -42,17 +42,6 @@ enum{
     USED((v));					\
   } while(0)
 
-/* Generic failure condition */
-#define MLK_ERR_FAIL -1
-/* An allocation failed. This can only happen if MLK_CONFIG_CUSTOM_ALLOC_FREE
- * is defined and the provided MLK_CUSTOM_ALLOC can fail. */
-#define MLK_ERR_OUT_OF_MEMORY -2
-/* An rng failure occured. Might be due to insufficient entropy or
- * system misconfiguration. */
-#define MLK_ERR_RNG_FAIL -3
-
-#define mlk_zeroize(ptr, len) memset(ptr, 0, len)
-
 s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond);
 void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, u8int b);
 
@@ -446,7 +435,7 @@ mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	mlk_zeroize(buf, sizeof(buf));
+	memset(buf, 0, sizeof(buf));
 }
 
 /**
@@ -1200,8 +1189,8 @@ mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, m
 
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	mlk_zeroize(buf, sizeof(buf));
-	mlk_zeroize(extkey, sizeof(extkey));
+	memset(buf, 0, sizeof(buf));
+	memset(extkey, 0, sizeof(extkey));
 }
 
 /* Reference: `poly_getnoise_eta2()` in the reference implementation @[REF].
@@ -1221,8 +1210,8 @@ mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES], u8int nonc
 
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	mlk_zeroize(buf, sizeof(buf));
-	mlk_zeroize(extkey, sizeof(extkey));
+	memset(buf, 0, sizeof(buf));
+	memset(extkey, 0, sizeof(extkey));
 }
 
 /* Reference: Does not exist in the reference implementation @[REF].
@@ -1263,8 +1252,8 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	mlk_zeroize(buf, sizeof(buf));
-	mlk_zeroize(extkey, sizeof(extkey));
+	memset(buf, 0, sizeof(buf));
+	memset(extkey, 0, sizeof(extkey));
 }
 
 /**
@@ -1379,7 +1368,7 @@ mlk_gen_matrix(int level, mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES], int 
 
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	mlk_zeroize(seed_ext, sizeof(seed_ext));
+	memset(seed_ext, 0, sizeof(seed_ext));
 }
 
 /**
@@ -1477,7 +1466,7 @@ mlk_indcpa_keypair_derand(int level, u8int *pk, u8int *sk, const u8int coins[MLK
 	MLK_ALLOC(skpv_cache, mlk_polyvec_mulcache, 1);
 
 	if(buf == nil || coins_with_domain_separator == nil || a == nil || e == nil || pkpv == nil || skpv == nil || skpv_cache == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
+		ret = -1;
 		goto cleanup;
 	}
 
@@ -1545,7 +1534,7 @@ mlk_indcpa_enc(int level, u8int *c, const u8int *m, const u8int *pk, const u8int
 	MLK_ALLOC(sp_cache, mlk_polyvec_mulcache, 1);
 
 	if(seed == nil || at == nil || sp == nil || pkpv == nil || ep == nil || b == nil || v == nil || k == nil || epp == nil || sp_cache == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
+		ret = -1;
 		goto cleanup;
 	}
 
@@ -1604,7 +1593,7 @@ mlk_indcpa_dec(int level, u8int *m, const u8int *c, const u8int *sk)
 	MLK_ALLOC(b_cache, mlk_polyvec_mulcache, 1);
 
 	if(b == nil || skpv == nil || v == nil || sb == nil || b_cache == nil){
-		ret = MLK_ERR_OUT_OF_MEMORY;
+		ret = -1;
 		goto cleanup;
 	}
 
@@ -1641,7 +1630,7 @@ mlk_kem_check_pk(int level, const u8int *pk)
 	mlk_polyvec_frombytes(level, &p, pk);
 	mlk_polyvec_reduce(level, &p);
 	mlk_polyvec_tobytes(level, p_reencoded, &p);
-	return tsmemcmp(pk, p_reencoded, _MLKEM_POLYVECBYTES(level)) ? MLK_ERR_FAIL : 0;
+	return tsmemcmp(pk, p_reencoded, _MLKEM_POLYVECBYTES(level)) ? -1 : 0;
 }
 
 static
@@ -1656,16 +1645,14 @@ int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
 	 */
 
 	mlk_hash_h(test, sk + sn, pn);
-	return memcmp(sk + sn - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? MLK_ERR_FAIL : 0;
+	return memcmp(sk + sn - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? -1 : 0;
 }
 
-static int
-mlk_kem_keypair_x(int level, u8int *pk, u8int *sk)
+/* keypair_x and enc_x are public for testing only */
+int
+mlk_kem_keypair_x(int level, u8int *pk, u8int *sk, u8int *coins)
 {
 	int ret;
-	u8int coins[2 * MLKEM_SYMBYTES];
-
-	genrandom(coins, sizeof coins);
 
 	ret = mlk_indcpa_keypair_derand(level, pk, sk, coins);
 	if(ret != 0)
@@ -1686,15 +1673,12 @@ cleanup:
 	return ret;
 }
 
-static int
-mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk)
+int
+mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk, u8int *coins)
 {
 	int ret;
-	u8int coins[MLKEM_SYMBYTES];
 	u8int buf[2 * MLKEM_SYMBYTES];
 	u8int kr[2 * MLKEM_SYMBYTES];
-
-	genrandom(coins, MLKEM_SYMBYTES);
 
 	/* Specification: Implements @[FIPS203, Section 7.2, Modulus check] */
 	ret = mlk_kem_check_pk(level, pk);
@@ -1794,37 +1778,55 @@ cleanup:
 int
 mlkem512_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_keypair_x(K512, pk, sk);
+	u8int coins[2 * MLKEM_SYMBYTES];
+
+	genrandom(coins, sizeof coins);
+	return mlk_kem_keypair_x(K512, pk, sk, coins);
 }
 
 int
 mlkem768_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_keypair_x(K768, pk, sk);
+	u8int coins[2 * MLKEM_SYMBYTES];
+
+	genrandom(coins, sizeof coins);
+	return mlk_kem_keypair_x(K768, pk, sk, coins);
 }
 
 int
 mlkem1024_keypair(u8int *pk, u8int *sk)
 {
-	return mlk_kem_keypair_x(K1024, pk, sk);
+	u8int coins[2 * MLKEM_SYMBYTES];
+
+	genrandom(coins, sizeof coins);
+	return mlk_kem_keypair_x(K1024, pk, sk, coins);
 }
 
 int
 mlkem512_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
-	return mlk_kem_enc_x(K512, ct, ss, pk);
+	u8int coins[MLKEM_SYMBYTES];
+
+	genrandom(coins, MLKEM_SYMBYTES);
+	return mlk_kem_enc_x(K512, ct, ss, pk, coins);
 }
 
 int
 mlkem768_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
-	return mlk_kem_enc_x(K768, ct, ss, pk);
+	u8int coins[MLKEM_SYMBYTES];
+
+	genrandom(coins, MLKEM_SYMBYTES);
+	return mlk_kem_enc_x(K768, ct, ss, pk, coins);
 }
 
 int
 mlkem1024_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
-	return mlk_kem_enc_x(K1024, ct, ss, pk);
+	u8int coins[MLKEM_SYMBYTES];
+
+	genrandom(coins, MLKEM_SYMBYTES);
+	return mlk_kem_enc_x(K1024, ct, ss, pk, coins);
 }
 
 int
