@@ -1239,8 +1239,8 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 	/* On systems with fast batched Keccak, we use 4-fold batched PRF,
 	 * even though that means generating more random data in buf[2] and buf[3]
 	 * than necessary. */
-	mlk_prf_eta(1, buf[0], extkey[0]);
-	mlk_prf_eta(1, buf[1], extkey[1]);
+	mlk_prf_eta(3, buf[0], extkey[0]);
+	mlk_prf_eta(3, buf[1], extkey[1]);
 	mlk_prf_eta(2, buf[2], extkey[2]);
 	mlk_prf_eta(2, buf[3], extkey[3]);
 
@@ -1634,7 +1634,7 @@ mlk_kem_check_pk(int level, const u8int *pk)
 }
 
 static
-int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
+int mlk_kem_check_sk(int level, const u8int *sk)
 {
 	u8int test[MLKEM_SYMBYTES];
 
@@ -1644,8 +1644,8 @@ int mlk_kem_check_sk(const u8int *sk, int sn, int pn)
 	 * of this function.
 	 */
 
-	mlk_hash_h(test, sk + sn, pn);
-	return memcmp(sk + sn - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? -1 : 0;
+	mlk_hash_h(test, sk + _MLKEM_INDCPA_SECRETKEYBYTES(level), _MLKEM_INDCCA_PUBLICKEYBYTES(level));
+	return memcmp(sk + _MLKEM_INDCCA_SECRETKEYBYTES(level) - 2 * MLKEM_SYMBYTES, test, MLKEM_SYMBYTES) ? -1 : 0;
 }
 
 /* keypair_x and enc_x are public for testing only */
@@ -1664,7 +1664,6 @@ mlk_kem_keypair_x(int level, u8int *pk, u8int *sk, u8int *coins)
 	memcpy(sk + _MLKEM_INDCCA_SECRETKEYBYTES(level) - MLKEM_SYMBYTES, coins + MLKEM_SYMBYTES, MLKEM_SYMBYTES);
 
 cleanup:
-	memset(coins, 0, sizeof coins);
 	if(ret != 0){
 		memset(pk, 0, _MLKEM_INDCCA_PUBLICKEYBYTES(level));
 		memset(sk, 0, _MLKEM_INDCCA_SECRETKEYBYTES(level));
@@ -1701,7 +1700,6 @@ mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk, u8int *coins)
 cleanup:
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
-	memset(coins, 0, sizeof coins);
 	memset(kr, 0, sizeof buf);
 	memset(buf, 0, sizeof buf);
 	return ret;
@@ -1718,7 +1716,7 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 	u8int tmp[MLKEM_SYMBYTES + _MLKEM1024_INDCCA_CIPHERTEXTBYTES];
 
 	/* Specification: Implements @[FIPS203, Section 7.3, Hash check] */
-	ret = mlk_kem_check_sk(sk, _MLKEM_INDCCA_SECRETKEYBYTES(level), _MLKEM_INDCCA_PUBLICKEYBYTES(level));
+	ret = mlk_kem_check_sk(level, sk);
 	if(ret != 0)
 		goto cleanup;
 
@@ -1779,54 +1777,72 @@ int
 mlkem512_keypair(u8int *pk, u8int *sk)
 {
 	u8int coins[2 * MLKEM_SYMBYTES];
+	int r;
 
 	genrandom(coins, sizeof coins);
-	return mlk_kem_keypair_x(K512, pk, sk, coins);
+	r = mlk_kem_keypair_x(K512, pk, sk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
 mlkem768_keypair(u8int *pk, u8int *sk)
 {
 	u8int coins[2 * MLKEM_SYMBYTES];
+	int r;
 
 	genrandom(coins, sizeof coins);
-	return mlk_kem_keypair_x(K768, pk, sk, coins);
+	r = mlk_kem_keypair_x(K768, pk, sk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
 mlkem1024_keypair(u8int *pk, u8int *sk)
 {
 	u8int coins[2 * MLKEM_SYMBYTES];
+	int r;
 
 	genrandom(coins, sizeof coins);
-	return mlk_kem_keypair_x(K1024, pk, sk, coins);
+	r = mlk_kem_keypair_x(K1024, pk, sk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
 mlkem512_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
 	u8int coins[MLKEM_SYMBYTES];
+	int r;
 
-	genrandom(coins, MLKEM_SYMBYTES);
-	return mlk_kem_enc_x(K512, ct, ss, pk, coins);
+	genrandom(coins, sizeof coins);
+	r = mlk_kem_enc_x(K512, ct, ss, pk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
 mlkem768_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
 	u8int coins[MLKEM_SYMBYTES];
+	int r;
 
-	genrandom(coins, MLKEM_SYMBYTES);
-	return mlk_kem_enc_x(K768, ct, ss, pk, coins);
+	genrandom(coins, sizeof coins);
+	r = mlk_kem_enc_x(K768, ct, ss, pk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
 mlkem1024_enc(u8int *ct, u8int *ss, const u8int *pk)
 {
 	u8int coins[MLKEM_SYMBYTES];
+	int r;
 
-	genrandom(coins, MLKEM_SYMBYTES);
-	return mlk_kem_enc_x(K1024, ct, ss, pk, coins);
+	genrandom(coins, sizeof coins);
+	r = mlk_kem_enc_x(K1024, ct, ss, pk, coins);
+	memset(coins, 0, sizeof coins);
+	return r;
 }
 
 int
