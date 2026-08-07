@@ -138,6 +138,15 @@ enc(int lvl, int ctsz)
 }
 
 static void
+assertinvalid(JSON *p)
+{
+	p = jsonbyname(p, "result");
+	assert(p != nil);
+	if(strcmp(p->s, "invalid") != 0)
+		sysfatal("skipping non invalid test");
+}
+
+static void
 dec(int lvl, int sksz, int ctsz)
 {
 	char *data;
@@ -161,11 +170,15 @@ dec(int lvl, int sksz, int ctsz)
 		sysfatal("no tests");
 	for(e = p->first; e; e = e->next){
 		p = jsonbyname(e->val, "c");
-		if(dec16(c, sizeof c, p->s, strlen(p->s)) != ctsz)
+		if(dec16(c, sizeof c, p->s, strlen(p->s)) != ctsz){
+			assertinvalid(e->val);
 			continue;
+		}
 		p = jsonbyname(e->val, "dk");
-		if(dec16(dk, sizeof dk, p->s, strlen(p->s)) != sksz)
+		if(dec16(dk, sizeof dk, p->s, strlen(p->s)) != sksz){
+			assertinvalid(e->val);
 			continue;
+		}
 		p = jsonbyname(e->val, "result");
 		if(strcmp(p->s, "invalid") == 0){
 			assert(mlk_kem_dec_x(lvl, ssout, c, dk) != 0);
@@ -208,26 +221,28 @@ test(int lvl, int pksz, int ctsz)
 		for(e = p->first; e; e = e->next){
 			p = jsonbyname(e->val, "seed");
 			assert(p != nil);
-			if(dec16(seed, sizeof seed, p->s, strlen(p->s)) != sizeof seed)
+			if(dec16(seed, sizeof seed, p->s, strlen(p->s)) != 2 * MLKEM_SYMBYTES){
+				assertinvalid(e->val);
 				continue;
+			}
 			p = jsonbyname(e->val, "ek");
-			if(p != nil){
-				if(dec16(ek, sizeof ek, p->s, strlen(p->s)) != pksz)
-					continue;
-				assert(mlk_kem_keypair_x(lvl, ekout, dk, seed) == 0);
-				if(memcmp(ek, ekout, pksz) != 0)
-					sysfatal("ek mistmatch");
-			} else
-				assert(mlk_kem_keypair_x(lvl, ekout, dk, seed) != 0);
+			if(dec16(ek, sizeof ek, p->s, strlen(p->s)) != pksz){
+				assertinvalid(e->val);
+				continue;
+			}
+			assert(mlk_kem_keypair_x(lvl, ekout, dk, seed) == 0);
+			if(memcmp(ek, ekout, pksz) != 0)
+				sysfatal("ek mistmatch");
 
 			p = jsonbyname(e->val, "c");
-			if(dec16(ct, sizeof ct, p->s, strlen(p->s)) != ctsz)
+			if(dec16(ct, sizeof ct, p->s, strlen(p->s)) != ctsz){
+				assertinvalid(e->val);
 				continue;
+			}
 			p = jsonbyname(e->val, "K");
 			dec16(ss, sizeof ss, p->s, strlen(p->s));
 			p = jsonbyname(e->val, "result");
 			if(strcmp(p->s, "invalid") == 0){
-				fprint(2, "%f\n", jsonbyname(e->val, "tcId")->n);
 				assert(mlk_kem_dec_x(lvl, ssout, ct, dk) != 0);
 			} else if(strcmp(p->s, "valid") == 0) {
 				p = jsonbyname(e->val, "K");
