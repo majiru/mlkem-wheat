@@ -61,7 +61,7 @@ keygen(int lvl, int pksz, int sksz)
 {
 	char *data;
 	JSON *top, *p;
-	JSONEl *e;
+	JSONEl *e, *t;
 
 	uchar seed[2 * MLKEM_SYMBYTES];
 	uchar ek[MLKEM1024_PUBLICKEYBYTES], ekout[MLKEM1024_PUBLICKEYBYTES];
@@ -74,66 +74,23 @@ keygen(int lvl, int pksz, int sksz)
 	p = jsonbyname(top, "testGroups");
 	if(p == nil)
 		sysfatal("no testGroups");
-	p = jsonbyname(p->first->val, "tests");
-	if(p == nil)
-		sysfatal("no tests");
-	for(e = p->first; e; e = e->next){
-		p = jsonbyname(e->val, "seed");
-		assert(dec16(seed, sizeof seed, p->s, strlen(p->s)) == sizeof seed);
-		p = jsonbyname(e->val, "ek");
-		dec16(ek, sizeof ek, p->s, strlen(p->s));
-		p = jsonbyname(e->val, "dk");
-		dec16(dk, sizeof dk, p->s, strlen(p->s));
-		assert(mlk_kem_keypair_x(lvl, ekout, dkout, seed) == 0);
-		if(memcmp(ekout, ek, pksz) != 0)
-			sysfatal("ek fail");
-		if(memcmp(dkout, dk, sksz) != 0)
-			sysfatal("dk fail");
-	}
-}
-
-static void
-enc(int lvl, int ctsz)
-{
-	char *data;
-	JSON *top, *p;
-	JSONEl *e;
-
-	uchar ek[MLKEM1024_PUBLICKEYBYTES];
-	uchar m[MLKEM_SYMBYTES];
-	uchar ct[MLKEM1024_CIPHERTEXTBYTES], ctout[MLKEM1024_CIPHERTEXTBYTES];
-	uchar ss[MLKEM_BYTES], ssout[MLKEM_BYTES];
-
-	data = slurp(smprint("data/mlkem_%s_encaps_test.json", tab[lvl]));
-	top = jsonparse(data);
-	if(top == nil)
-		sysfatal("jsonparse: %r");
-	p = jsonbyname(top, "testGroups");
-	if(p == nil)
-		sysfatal("no testGroups");
-	p = jsonbyname(p->first->val, "tests");
-	if(p == nil)
-		sysfatal("no tests");
-	for(e = p->first; e; e = e->next){
-		p = jsonbyname(e->val, "m");
-		assert(dec16(m, sizeof m, p->s, strlen(p->s)) == sizeof m);
-		p = jsonbyname(e->val, "ek");
-		dec16(ek, sizeof ek, p->s, strlen(p->s));
-		p = jsonbyname(e->val, "c");
-		dec16(ct, sizeof ct, p->s, strlen(p->s));
-		p = jsonbyname(e->val, "K");
-		dec16(ss, sizeof ss, p->s, strlen(p->s));
-		p = jsonbyname(e->val, "result");
-		if(strcmp(p->s, "invalid") == 0)
-			assert(mlk_kem_enc_x(lvl, ct, ss, ek, m) != 0);
-		else if(strcmp(p->s, "valid") == 0) {
-			assert(mlk_kem_enc_x(lvl, ct, ss, ek, m) == 0);
-			if(memcmp(ctout, ct, ctsz) != 0)
-				sysfatal("ct fail");
-			if(memcmp(ssout, ss, sizeof ss) != 0)
-				sysfatal("ss fail");
-		} else
-			sysfatal("unknown result: %s", p->s);
+	for(t = p->first; t; t = t->next){
+		p = jsonbyname(t->val, "tests");
+		if(p == nil)
+			sysfatal("no tests");
+		for(e = p->first; e; e = e->next){
+			p = jsonbyname(e->val, "seed");
+			assert(dec16(seed, sizeof seed, p->s, strlen(p->s)) == sizeof seed);
+			p = jsonbyname(e->val, "ek");
+			dec16(ek, sizeof ek, p->s, strlen(p->s));
+			p = jsonbyname(e->val, "dk");
+			dec16(dk, sizeof dk, p->s, strlen(p->s));
+			assert(mlk_kem_keypair_x(lvl, ekout, dkout, seed) == 0);
+			if(memcmp(ekout, ek, pksz) != 0)
+				sysfatal("ek fail");
+			if(memcmp(dkout, dk, sksz) != 0)
+				sysfatal("dk fail");
+		}
 	}
 }
 
@@ -147,11 +104,62 @@ assertinvalid(JSON *p)
 }
 
 static void
+enc(int lvl, int pksz, int ctsz)
+{
+	char *data;
+	JSON *top, *p;
+	JSONEl *e, *t;
+
+	uchar ek[MLKEM1024_PUBLICKEYBYTES + 512];
+	uchar m[MLKEM_SYMBYTES];
+	uchar ct[MLKEM1024_CIPHERTEXTBYTES], ctout[MLKEM1024_CIPHERTEXTBYTES];
+	uchar ss[MLKEM_BYTES], ssout[MLKEM_BYTES];
+
+	data = slurp(smprint("data/mlkem_%s_encaps_test.json", tab[lvl]));
+	top = jsonparse(data);
+	if(top == nil)
+		sysfatal("jsonparse: %r");
+	p = jsonbyname(top, "testGroups");
+	if(p == nil)
+		sysfatal("no testGroups");
+
+	for(t = p->first; t; t = t->next){
+		p = jsonbyname(t->val, "tests");
+		if(p == nil)
+			sysfatal("no tests");
+		for(e = p->first; e; e = e->next){
+			p = jsonbyname(e->val, "m");
+			assert(dec16(m, sizeof m, p->s, strlen(p->s)) == sizeof m);
+			p = jsonbyname(e->val, "ek");
+			if(dec16(ek, sizeof ek, p->s, strlen(p->s)) != pksz){
+				assertinvalid(e->val);
+				continue;
+			}
+			p = jsonbyname(e->val, "c");
+			dec16(ct, sizeof ct, p->s, strlen(p->s));
+			p = jsonbyname(e->val, "K");
+			dec16(ss, sizeof ss, p->s, strlen(p->s));
+			p = jsonbyname(e->val, "result");
+			if(strcmp(p->s, "invalid") == 0)
+				assert(mlk_kem_enc_x(lvl, ctout, ssout, ek, m) != 0);
+			else if(strcmp(p->s, "valid") == 0) {
+				assert(mlk_kem_enc_x(lvl, ctout, ssout, ek, m) == 0);
+				if(memcmp(ctout, ct, ctsz) != 0)
+					sysfatal("enc ct fail");
+				if(memcmp(ssout, ss, sizeof ss) != 0)
+					sysfatal("ss fail");
+			} else
+				sysfatal("unknown result: %s", p->s);
+		}
+	}
+}
+
+static void
 dec(int lvl, int sksz, int ctsz)
 {
 	char *data;
 	JSON *top, *p;
-	JSONEl *e;
+	JSONEl *e, *t;
 
 	uchar dk[MLKEM1024_SECRETKEYBYTES + 512];
 	uchar c[MLKEM1024_CIPHERTEXTBYTES + 512];
@@ -165,31 +173,34 @@ dec(int lvl, int sksz, int ctsz)
 	p = jsonbyname(top, "testGroups");
 	if(p == nil)
 		sysfatal("no testGroups");
-	p = jsonbyname(p->first->val, "tests");
-	if(p == nil)
-		sysfatal("no tests");
-	for(e = p->first; e; e = e->next){
-		p = jsonbyname(e->val, "c");
-		if(dec16(c, sizeof c, p->s, strlen(p->s)) != ctsz){
-			assertinvalid(e->val);
-			continue;
+
+	for(t = p->first; t; t = t->next){
+		p = jsonbyname(t->val, "tests");
+		if(p == nil)
+			sysfatal("no tests");
+		for(e = p->first; e; e = e->next){
+			p = jsonbyname(e->val, "c");
+			if(dec16(c, sizeof c, p->s, strlen(p->s)) != ctsz){
+				assertinvalid(e->val);
+				continue;
+			}
+			p = jsonbyname(e->val, "dk");
+			if(dec16(dk, sizeof dk, p->s, strlen(p->s)) != sksz){
+				assertinvalid(e->val);
+				continue;
+			}
+			p = jsonbyname(e->val, "result");
+			if(strcmp(p->s, "invalid") == 0){
+				assert(mlk_kem_dec_x(lvl, ssout, c, dk) != 0);
+			} else if(strcmp(p->s, "valid") == 0) {
+				p = jsonbyname(e->val, "K");
+				dec16(ss, sizeof ss, p->s, strlen(p->s));
+				assert(mlk_kem_dec_x(lvl, ssout, c, dk) == 0);
+				if(memcmp(ssout, ss, sizeof ss) != 0)
+					sysfatal("ss fail");
+			} else
+				sysfatal("unknown result: %s", p->s);
 		}
-		p = jsonbyname(e->val, "dk");
-		if(dec16(dk, sizeof dk, p->s, strlen(p->s)) != sksz){
-			assertinvalid(e->val);
-			continue;
-		}
-		p = jsonbyname(e->val, "result");
-		if(strcmp(p->s, "invalid") == 0){
-			assert(mlk_kem_dec_x(lvl, ssout, c, dk) != 0);
-		} else if(strcmp(p->s, "valid") == 0) {
-			p = jsonbyname(e->val, "K");
-			dec16(ss, sizeof ss, p->s, strlen(p->s));
-			assert(mlk_kem_dec_x(lvl, ssout, c, dk) == 0);
-			if(memcmp(ssout, ss, sizeof ss) != 0)
-				sysfatal("ss fail");
-		} else
-			sysfatal("unknown result: %s", p->s);
 	}
 }
 
@@ -264,9 +275,9 @@ main(int,char**)
 	keygen(K512, MLKEM512_PUBLICKEYBYTES, MLKEM512_SECRETKEYBYTES);
 	keygen(K768, MLKEM768_PUBLICKEYBYTES, MLKEM768_SECRETKEYBYTES);
 	keygen(K1024, MLKEM1024_PUBLICKEYBYTES, MLKEM1024_SECRETKEYBYTES);
-	enc(K512, MLKEM512_CIPHERTEXTBYTES);
-	enc(K768, MLKEM768_CIPHERTEXTBYTES);
-	enc(K1024, MLKEM1024_CIPHERTEXTBYTES);
+	enc(K512, MLKEM512_PUBLICKEYBYTES, MLKEM512_CIPHERTEXTBYTES);
+	enc(K768, MLKEM768_PUBLICKEYBYTES, MLKEM768_CIPHERTEXTBYTES);
+	enc(K1024, MLKEM1024_PUBLICKEYBYTES, MLKEM1024_CIPHERTEXTBYTES);
 	dec(K512, MLKEM512_SECRETKEYBYTES, MLKEM512_CIPHERTEXTBYTES);
 	dec(K768, MLKEM768_SECRETKEYBYTES, MLKEM768_CIPHERTEXTBYTES);
 	dec(K1024, MLKEM1024_SECRETKEYBYTES, MLKEM1024_CIPHERTEXTBYTES);

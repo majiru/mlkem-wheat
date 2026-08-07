@@ -39,7 +39,7 @@ data:
 	mkdir -p data
 
 data/%: data
-	hget https://raw.githubusercontent.com/C2SP/wycheproof/fc24cd5b787d8e496bff31b0468af693a652b0f2/testvectors_v1/$stem >$target
+	hget https://raw.githubusercontent.com/C2SP/wycheproof/b61843a9a5115bb758134b6a1f5d5e502d445342/testvectors_v1/$stem >$target
 
 test:V: $WYCH
 
