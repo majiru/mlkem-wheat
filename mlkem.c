@@ -1705,7 +1705,7 @@ cleanup:
 	return ret;
 }
 
-static int
+int
 mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 {
 	int ret;

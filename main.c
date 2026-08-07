@@ -303,5 +303,5 @@ int main(void)
   }
 
   printf("\nAll tests passed!\n");
-  return 0;
+  exits(nil);
 }

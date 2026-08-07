@@ -7,13 +7,13 @@ PORT=\
 	mlkem.$O\
 	verify.$O\
 
-OFILES=\
-	main.$O\
+TARG=\
+	main\
+	wych\
+
+</sys/src/cmd/mkmany
 
 CLEANFILES=$OFILES $LIB $PORT
-
-</sys/src/cmd/mkone
-
 
 $LIB:V:	$PORT
 	ar vu $LIB $newprereq
@@ -21,5 +21,6 @@ $LIB:V:	$PORT
 &:n:	&.$O
 	ar vu $LIB $stem.$O
 
-test:V:	$O.out
-	$O.out
+test:V:	$O.main $O.wych
+	$O.main
+	$O.wych
