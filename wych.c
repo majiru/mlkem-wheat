@@ -164,8 +164,10 @@ dec(int lvl, int sksz, int ctsz)
 	uchar dk[MLKEM1024_SECRETKEYBYTES + 512];
 	uchar c[MLKEM1024_CIPHERTEXTBYTES + 512];
 	uchar ss[MLKEM_BYTES], ssout[MLKEM_BYTES];
+	static uchar nine[MLKEM_BYTES];
 
 
+	memset(nine, 9, sizeof nine);
 	data = slurp(smprint("data/mlkem_%s_semi_expanded_decaps_test.json", tab[lvl]));
 	top = jsonparse(data);
 	if(top == nil)
@@ -191,7 +193,9 @@ dec(int lvl, int sksz, int ctsz)
 			}
 			p = jsonbyname(e->val, "result");
 			if(strcmp(p->s, "invalid") == 0){
+				memset(ssout, 9, sizeof ssout);
 				assert(mlk_kem_dec_x(lvl, ssout, c, dk) != 0);
+				assert(memcmp(ssout, nine, sizeof ssout) == 0);
 			} else if(strcmp(p->s, "valid") == 0) {
 				p = jsonbyname(e->val, "K");
 				dec16(ss, sizeof ss, p->s, strlen(p->s));
@@ -216,7 +220,10 @@ test(int lvl, int pksz, int ctsz)
 	uchar dk[MLKEM1024_SECRETKEYBYTES];
 	uchar ct[MLKEM1024_CIPHERTEXTBYTES + 512];
 	uchar ss[MLKEM_BYTES], ssout[MLKEM_BYTES];
+	static uchar nine[MLKEM_BYTES];
 
+
+	memset(nine, 9, sizeof nine);
 	data = slurp(smprint("data/mlkem_%s_test.json", tab[lvl]));
 	top = jsonparse(data);
 	if(top == nil)
@@ -254,7 +261,9 @@ test(int lvl, int pksz, int ctsz)
 			dec16(ss, sizeof ss, p->s, strlen(p->s));
 			p = jsonbyname(e->val, "result");
 			if(strcmp(p->s, "invalid") == 0){
+				memset(ssout, 9, sizeof ssout);
 				assert(mlk_kem_dec_x(lvl, ssout, ct, dk) != 0);
+				assert(memcmp(ssout, nine, sizeof ssout) == 0);
 			} else if(strcmp(p->s, "valid") == 0) {
 				p = jsonbyname(e->val, "K");
 				dec16(ss, sizeof ss, p->s, strlen(p->s));

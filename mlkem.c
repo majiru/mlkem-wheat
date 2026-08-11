@@ -42,8 +42,8 @@ enum{
     USED((v));					\
   } while(0)
 
-s16int mlk_ct_sel_int16(s16int a, s16int b, u16int cond);
-void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, u8int b);
+int mlk_ct_sel_int(int a, int b, uint cond);
+void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, ulong b);
 
 /* Macros denoting FIPS 203 specific Hash functions */
 
@@ -142,7 +142,7 @@ mlk_montgomery_reduce(s32int a)
 	 *	<= ceil(|a| / 2^16) + (MLKEM_Q + 1) / 2
 	 * (Note that |a >> n| = ceil(|a| / 2^16) for negative a)
 	 */
-	return (s16int)r;
+	return r;
 }
 
 /**
@@ -171,9 +171,7 @@ mlk_barrett_reduce(s16int a)
 	 * t is in -10 .. +10, so we need 32-bit math to
 	 * evaluate t * MLKEM_Q and the subsequent subtraction
 	 */
-	s16int res = (s16int)(a - t * MLKEM_Q);
-
-	return res;
+	return a - t * MLKEM_Q;
 }
 
 /* Reference: `poly_tomont()` in the reference implementation @[REF]. */
@@ -191,14 +189,14 @@ mlk_poly_tomont(mlk_poly *r)
  * range [0, MLKEM_Q-1].
  */
 static s16int
-mlk_scalar_signed_to_unsigned_q(s16int c)
+mlk_scalar_signed_to_unsigned_q(int c)
 {
 
 	/* Add MLKEM_Q if c is negative, but in constant time.
 	 *
 	 * Note that c + MLKEM_Q does not overflow in s16int,
 	 * so the cast to u16int is safe. */
-	c = mlk_ct_sel_int16((s16int)(c + MLKEM_Q), c, ((u16int)(((s32int)c)>>16) & (s32int)0xffff));
+	c = mlk_ct_sel_int(c + MLKEM_Q, c, (u16int)(c>>16));
 
 	return c;
 }
@@ -217,7 +215,7 @@ mlk_poly_reduce(mlk_poly *r)
 
 	for(i = 0; i < MLKEM_N; i++){
 		/* Barrett reduction, giving signed canonical representative */
-		s16int t = mlk_barrett_reduce(r->coeffs[i]);
+		int t = mlk_barrett_reduce(r->coeffs[i]);
 		/* Conditional addition to get unsigned canonical representative */
 		r->coeffs[i] = mlk_scalar_signed_to_unsigned_q(t);
 	}
@@ -250,7 +248,7 @@ mlk_poly_sub(mlk_poly *r, const mlk_poly *b)
 	}
 }
 
-static const s16int mlk_zetas[128] = {
+static int mlk_zetas[128] = {
 	 -1044, -758, -359, -1517, 1493, 1422, 287,  202, -171, 622,  1577,
 	 182,  962,  -1202, -1474, 1468, 573,  -1325, 264, 383,  -829, 1458,
 	 -1602, -130, -681, 1017, 732,  608,  -1542, 411, -205, -1571, 1223,
@@ -274,10 +272,10 @@ mlk_poly_mulcache_compute(mlk_poly_mulcache *x, const mlk_poly *a)
 {
 	unsigned i;
 	for(i = 0; i < MLKEM_N / 4; i++){
-		x->coeffs[2 * i + 0] = mlk_montgomery_reduce((s32int)a->coeffs[4 * i + 1] * (s32int)mlk_zetas[64 + i]);
+		x->coeffs[2 * i + 0] = mlk_montgomery_reduce(a->coeffs[4 * i + 1] * mlk_zetas[64 + i]);
 		/* The values in zeta table are <= MLKEM_Q in absolute value,
 		 * so the negation in s16int is safe. */
-		x->coeffs[2 * i + 1] = mlk_montgomery_reduce((s32int)a->coeffs[4 * i + 3] * (s32int)(-mlk_zetas[64 + i]));
+		x->coeffs[2 * i + 1] = mlk_montgomery_reduce(a->coeffs[4 * i + 3] * -mlk_zetas[64 + i]);
 	}
 }
 
@@ -302,8 +300,8 @@ mlk_poly_ntt(mlk_poly *p)
 				s16int t;
 				t = mlk_montgomery_reduce((s32int)r[j + len] * (s32int)zeta);
 				/* The precondition implies that the arithmetic does not overflow. */
-				r[j + len] = (s16int)(r[j] - t);
-				r[j] = (s16int)(r[j] + t);
+				r[j + len] = r[j] - t;
+				r[j] = r[j] + t;
 			}
 		}
 	}
@@ -342,8 +340,8 @@ mlk_poly_invntt_tomont(mlk_poly *p)
 				s16int t = r[j];
 				/* The preconditions imply that the arithmetic does not overflow. */
 				r[j] = mlk_barrett_reduce((s16int)(t + r[j + len]));
-				r[j + len] = (s16int)(r[j + len] - t);
-				r[j + len] = mlk_montgomery_reduce((s32int)r[j + len] * (s32int)zeta);
+				r[j + len] = r[j + len] - t;
+				r[j + len] = mlk_montgomery_reduce(r[j + len] * zeta);
 			}
 		}
 	}
@@ -555,7 +553,7 @@ mlk_scalar_compress_d4(s16int u)
 	/* check-magic: 1290160 == 16 * round(2^28 / MLKEM_Q) */
 	u32int d0 = (u32int)u * 1290160;
 	/* The return value is < 16, so not altered by the conversion to u8int. */
-	return (u8int)((d0 + ((u32int)1u << 27)) >> 28); /* round(d0/2^28) */
+	return (d0 + ((u32int)1u << 27)) >> 28; /* round(d0/2^28) */
 }
 
 /**
@@ -567,7 +565,7 @@ mlk_scalar_decompress_d4(u8int u)
 {
 	/* The return value is in 0..MLKEM_Q-1, hence not altered by the
 	 * conversion to s16int. */
-	return (s16int)((((u32int)u * MLKEM_Q) + 8) >> 4);
+	return (((u32int)u * MLKEM_Q) + 8) >> 4;
 }
 
 /*
@@ -950,12 +948,12 @@ mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
 	for(i = 0; i < MLKEM_N / 8; i++){
 		unsigned j;
 		for(j = 0; j < 8; j++){
-			/* mlk_ct_sel_int16(MLKEM_Q_HALF, 0, b) is `Decompress_1(b != 0)`
+			/* mlk_ct_sel_int(MLKEM_Q_HALF, 0, b) is `Decompress_1(b != 0)`
 			 * as per @[FIPS203, Eq (4.8)]. */
 
 			/* Assumes the compiler does not change this to a bit selection */
 			u8int mask = 1u << j;
-			r->coeffs[8 * i + j] = mlk_ct_sel_int16(MLKEM_Q_HALF, 0, msg[i] & mask);
+			r->coeffs[8 * i + j] = mlk_ct_sel_int(MLKEM_Q_HALF, 0, msg[i] & mask);
 		}
 	}
 }
@@ -1257,48 +1255,6 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 }
 
 /**
- * Serialize the public key as the concatenation of the serialized vector of
- * polynomials pk and the public seed used to generate the matrix A.
- *
- */
-static void
-mlk_pack_pk(int level, u8int *r, const mlk_polyvec *pk, const u8int seed[MLKEM_SYMBYTES])
-{
-	mlk_polyvec_tobytes(level, r, pk);
-	memcpy(r + _MLKEM_POLYVECBYTES(level), seed, MLKEM_SYMBYTES);
-}
-
-/**
- * De-serialize public key from a byte array; approximate inverse of
- * mlk_pack_pk.
- *
- */
-static void
-mlk_unpack_pk(int level, mlk_polyvec *pk, u8int seed[MLKEM_SYMBYTES], const u8int *packedpk)
-{
-	mlk_polyvec_frombytes(level, pk, packedpk);
-	memcpy(seed, packedpk + _MLKEM_POLYVECBYTES(level), MLKEM_SYMBYTES);
-}
-
-/**
- * Serialize the secret key.
- */
-static void
-mlk_pack_sk(int level, u8int *r, const mlk_polyvec *sk)
-{
-	mlk_polyvec_tobytes(level, r, sk);
-}
-
-/**
- * De-serialize the secret key; inverse of mlk_pack_sk.
- */
-static void
-mlk_unpack_sk(int level, mlk_polyvec *sk, const u8int *packedsk)
-{
-	mlk_polyvec_frombytes(level, sk, packedsk);
-}
-
-/**
  * Serialize the ciphertext as the concatenation of the compressed and
  * serialized vector of polynomials b and the compressed and serialized
  * polynomial v.
@@ -1494,8 +1450,9 @@ mlk_indcpa_keypair_derand(int level, u8int *pk, u8int *sk, const u8int coins[MLK
 	mlk_polyvec_reduce(level, pkpv);
 	mlk_polyvec_reduce(level, skpv);
 
-	mlk_pack_sk(level, sk, skpv);
-	mlk_pack_pk(level, pk, pkpv, publicseed);
+	mlk_polyvec_tobytes(level, sk, skpv);
+	mlk_polyvec_tobytes(level, pk, pkpv);
+	memcpy(pk + _MLKEM_POLYVECBYTES(level), publicseed, MLKEM_SYMBYTES);
 
 cleanup:
 	/* Specification: Partially implements
@@ -1538,7 +1495,8 @@ mlk_indcpa_enc(int level, u8int *c, const u8int *m, const u8int *pk, const u8int
 		goto cleanup;
 	}
 
-	mlk_unpack_pk(level, pkpv, seed, pk);
+	mlk_polyvec_frombytes(level, pkpv, pk);
+	memcpy(seed, pk + _MLKEM_POLYVECBYTES(level), MLKEM_SYMBYTES);
 	mlk_poly_frommsg(k, m);
 
 	mlk_gen_matrix(level, at, seed, 1 /* transpose */);
@@ -1598,7 +1556,7 @@ mlk_indcpa_dec(int level, u8int *m, const u8int *c, const u8int *sk)
 	}
 
 	mlk_unpack_ciphertext(level, b, v, c);
-	mlk_unpack_sk(level, skpv, sk);
+	mlk_polyvec_frombytes(level, skpv, sk);
 
 	mlk_polyvec_ntt(level, b);
 	mlk_polyvec_mulcache_compute(level, b_cache, b);
