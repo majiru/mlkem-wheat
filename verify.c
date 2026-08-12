@@ -3,20 +3,26 @@
 #include <mp.h>
 #include <libsec.h>
 
-int
-mlk_ct_sel_int(int a, int b, uint cond)
-{
-  uint au, bu;
+/*
+ * Both of these functions use the same general method for doing constant time selection.
+ * The first is a (x | -x) >> 31 clamps the input to either 0 or 1.
+ * This trick is stolen from "Hacker's Delight" by Henry S. Warren Jr.
+ * The next line x = -x then does a sign extension to get a mask.
+ */
 
-  au = a, bu = b;
-  cond = -cond >> 16;
-  return bu ^ (cond & (au ^ bu));
+int
+mlk_ct_sel_int(uint a, uint b, uint cond)
+{
+	cond = (cond | -cond) >> 31;
+	cond = -cond;
+	return b ^ (cond & (a ^ b));
 }
 
 void
-mlk_ct_cmov_zero(uchar *dst, uchar *src, ulong len, ulong b)
+mlk_ct_cmov_zero(uchar *dst, uchar *src, ulong len, uint b)
 {
-  b = -b >> 24;
-  for(; len != 0; dst++, src++, len--)
-	*dst = *src ^ (b & (*dst ^ *src));
+	b = (b | -b) >> 31;
+	b = -b;
+	for(; len != 0; dst++, src++, len--)
+		*dst = *src ^ (b & (*dst ^ *src));
 }

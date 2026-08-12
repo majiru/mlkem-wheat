@@ -42,8 +42,8 @@ enum{
     USED((v));					\
   } while(0)
 
-int mlk_ct_sel_int(int a, int b, uint cond);
-void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, ulong b);
+int mlk_ct_sel_int(uint a, uint b, uint cond);
+void mlk_ct_cmov_zero(u8int *r, const u8int *x, ulong len, uint b);
 
 /* Macros denoting FIPS 203 specific Hash functions */
 
@@ -189,14 +189,14 @@ mlk_poly_tomont(mlk_poly *r)
  * range [0, MLKEM_Q-1].
  */
 static s16int
-mlk_scalar_signed_to_unsigned_q(int c)
+mlk_scalar_signed_to_unsigned_q(short c)
 {
 
 	/* Add MLKEM_Q if c is negative, but in constant time.
 	 *
 	 * Note that c + MLKEM_Q does not overflow in s16int,
 	 * so the cast to u16int is safe. */
-	c = mlk_ct_sel_int(c + MLKEM_Q, c, (u16int)(c>>16));
+	c = mlk_ct_sel_int(c + MLKEM_Q, c, (u16int)(((long)c)>>16));
 
 	return c;
 }
@@ -215,7 +215,7 @@ mlk_poly_reduce(mlk_poly *r)
 
 	for(i = 0; i < MLKEM_N; i++){
 		/* Barrett reduction, giving signed canonical representative */
-		int t = mlk_barrett_reduce(r->coeffs[i]);
+		short t = mlk_barrett_reduce(r->coeffs[i]);
 		/* Conditional addition to get unsigned canonical representative */
 		r->coeffs[i] = mlk_scalar_signed_to_unsigned_q(t);
 	}
@@ -561,11 +561,11 @@ mlk_scalar_compress_d4(s16int u)
  *
  */
 static s16int
-mlk_scalar_decompress_d4(u8int u)
+mlk_scalar_decompress_d4(u32int u)
 {
 	/* The return value is in 0..MLKEM_Q-1, hence not altered by the
 	 * conversion to s16int. */
-	return (((u32int)u * MLKEM_Q) + 8) >> 4;
+	return (u * MLKEM_Q + 8) >> 4;
 }
 
 /*
@@ -590,18 +590,18 @@ mlk_scalar_compress_d5(s16int u)
 	/* check-magic: 1290176 == 2^5 * round(2^27 / MLKEM_Q) */
 	u32int d0 = (u32int)u * 1290176;
 	/* The return value is < 32, so not altered by the conversion to u8int. */
-	return (u8int)((d0 + ((u32int)1u << 26)) >> 27); /* round(d0/2^27) */
+	return (d0 + ((u32int)1u << 26)) >> 27; /* round(d0/2^27) */
 }
 
 /**
  * Compute round(u * MLKEM_Q / 32).
  */
 static s16int
-mlk_scalar_decompress_d5(u8int u)
+mlk_scalar_decompress_d5(u32int u)
 {
 	/* The return value is in 0..MLKEM_Q-1, hence not altered by the
 	 * conversion to s16int. */
-	return (s16int)((((u32int)u * MLKEM_Q) + 16) >> 5);
+	return ((u * MLKEM_Q) + 16) >> 5;
 }
 
 /*
@@ -864,12 +864,10 @@ mlk_poly_decompress_d11(mlk_poly *r, const u8int a[MLKEM_POLYCOMPRESSEDBYTES_D11
 		u8int const *base = &a[11 * j];
 		t[0] = 0x7FF & ((base[0] >> 0) | ((u16int)base[1] << 8));
 		t[1] = 0x7FF & ((base[1] >> 3) | ((u16int)base[2] << 5));
-		t[2] = 0x7FF & ((base[2] >> 6) | ((u16int)base[3] << 2) |
-										((u16int)base[4] << 10));
+		t[2] = 0x7FF & ((base[2] >> 6) | ((u16int)base[3] << 2) | ((u16int)base[4] << 10));
 		t[3] = 0x7FF & ((base[4] >> 1) | ((u16int)base[5] << 7));
 		t[4] = 0x7FF & ((base[5] >> 4) | ((u16int)base[6] << 4));
-		t[5] = 0x7FF & ((base[6] >> 7) | ((u16int)base[7] << 1) |
-										((u16int)base[8] << 9));
+		t[5] = 0x7FF & ((base[6] >> 7) | ((u16int)base[7] << 1) | ((u16int)base[8] << 9));
 		t[6] = 0x7FF & ((base[8] >> 2) | ((u16int)base[9] << 6));
 		t[7] = 0x7FF & ((base[9] >> 5) | ((u16int)base[10] << 3));
 
@@ -892,8 +890,8 @@ mlk_poly_tobytes(u8int r[MLKEM_POLYBYTES], const mlk_poly *a)
 	for(i = 0; i < MLKEM_N / 2; i++){
 		/* The conversion to u16int is safe since we assume that
 		 * the coefficients of `a` are non-negative. */
-		const u16int t0 = (u16int)a->coeffs[2 * i];
-		const u16int t1 = (u16int)a->coeffs[2 * i + 1];
+		const u16int t0 = a->coeffs[2 * i];
+		const u16int t1 = a->coeffs[2 * i + 1];
 		/*
 		 * t0 and t1 are both < MLKEM_Q, so contain at most 12 bits each of
 		 * significant data, so these can be packed into 24 bits or exactly
@@ -901,7 +899,7 @@ mlk_poly_tobytes(u8int r[MLKEM_POLYBYTES], const mlk_poly *a)
 		 */
 
 		/* Least significant bits 0 - 7 of t0. */
-		r[3 * i + 0] = (u8int)(t0 & 0xFF);
+		r[3 * i + 0] = t0 & 0xFF;
 
 		/*
 		 * Most significant bits 8 - 11 of t0 become the least significant
@@ -950,7 +948,6 @@ mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
 		for(j = 0; j < 8; j++){
 			/* mlk_ct_sel_int(MLKEM_Q_HALF, 0, b) is `Decompress_1(b != 0)`
 			 * as per @[FIPS203, Eq (4.8)]. */
-
 			/* Assumes the compiler does not change this to a bit selection */
 			u8int mask = 1u << j;
 			r->coeffs[8 * i + j] = mlk_ct_sel_int(MLKEM_Q_HALF, 0, msg[i] & mask);
@@ -976,38 +973,6 @@ mlk_poly_tomsg(u8int msg[MLKEM_INDCPA_MSGBYTES], const mlk_poly *a)
 			u32int t = mlk_scalar_compress_d1(a->coeffs[8 * i + j]);
 			msg[i] |= (u8int)(t << j);
 		}
-	}
-}
-
-/* Reference: `polyvec_compress()` in the reference implementation @[REF]
- * - In contrast to the reference implementation, we assume
- *	unsigned canonical coefficients here.
- *	The reference implementation works with coefficients
- *	in the range [-(MLKEM_Q-1), MLKEM_Q-1]. */
-static void
-mlk_polyvec_compress_du(int level, u8int *r, const mlk_polyvec *a)
-{
-	unsigned i;
-
-	for(i = 0; i < level; i++){
-		if(level == K1024)
-			mlk_poly_compress_d11(r + i * MLKEM_POLYCOMPRESSEDBYTES_D11, &a->vec[i]);
-		else
-			mlk_poly_compress_d10(r + i * MLKEM_POLYCOMPRESSEDBYTES_D10, &a->vec[i]);
-	}
-}
-
-/* Reference: `polyvec_decompress()` in the reference implementation @[REF]. */
-static void
-mlk_polyvec_decompress_du(int level, mlk_polyvec *r, const u8int *a)
-{
-	unsigned i;
-
-	for(i = 0; i < level; i++){
-		if(level == K1024)
-			mlk_poly_decompress_d11(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_D11);
-		else
-			mlk_poly_decompress_d10(&r->vec[i], a + i * MLKEM_POLYCOMPRESSEDBYTES_D10);
 	}
 }
 
@@ -1205,7 +1170,6 @@ mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES], u8int nonc
 
 	mlk_poly_cbd2(r, buf);
 
-
 	/* Specification: Partially implements
 	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(buf, 0, sizeof(buf));
@@ -1262,11 +1226,25 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 static void
 mlk_pack_ciphertext(int level, u8int *r, const mlk_polyvec *b, mlk_poly *v)
 {
-	mlk_polyvec_compress_du(level, r, b);
-	if(level == K512 || level == K768)
+	uint i;
+
+	switch(level){
+	case K512:
+		for(i = 0; i < level; i++)
+			mlk_poly_compress_d10(r + i * MLKEM_POLYCOMPRESSEDBYTES_D10, &b->vec[i]);
 		mlk_poly_compress_d4(r + level*MLKEM_POLYCOMPRESSEDBYTES_D10, v);
-	else
+		break;
+	case K768:
+		for(i = 0; i < level; i++)
+			mlk_poly_compress_d10(r + i * MLKEM_POLYCOMPRESSEDBYTES_D10, &b->vec[i]);
+		mlk_poly_compress_d4(r + level*MLKEM_POLYCOMPRESSEDBYTES_D10, v);
+		break;
+	case K1024:
+		for(i = 0; i < level; i++)
+			mlk_poly_compress_d11(r + i * MLKEM_POLYCOMPRESSEDBYTES_D11, &b->vec[i]);
 		mlk_poly_compress_d5(r + level*MLKEM_POLYCOMPRESSEDBYTES_D11, v);
+		break;
+	}
 }
 
 /**
@@ -1277,11 +1255,25 @@ mlk_pack_ciphertext(int level, u8int *r, const mlk_polyvec *b, mlk_poly *v)
 static void
 mlk_unpack_ciphertext(int level, mlk_polyvec *b, mlk_poly *v, const u8int *c)
 {
-	mlk_polyvec_decompress_du(level, b, c);
-	if(level == K512 || level == K768)
+	uint i;
+
+	switch(level){
+	case K512:
+		for(i = 0; i < level; i++)
+			mlk_poly_decompress_d10(&b->vec[i], c + i * MLKEM_POLYCOMPRESSEDBYTES_D10);
 		mlk_poly_decompress_d4(v, c + level*MLKEM_POLYCOMPRESSEDBYTES_D10);
-	else
+		break;
+	case K768:
+		for(i = 0; i < level; i++)
+			mlk_poly_decompress_d10(&b->vec[i], c + i * MLKEM_POLYCOMPRESSEDBYTES_D10);
+		mlk_poly_decompress_d4(v, c + level*MLKEM_POLYCOMPRESSEDBYTES_D10);
+		break;
+	case K1024:
+		for(i = 0; i < level; i++)
+			mlk_poly_decompress_d11(&b->vec[i], c + i * MLKEM_POLYCOMPRESSEDBYTES_D11);
 		mlk_poly_decompress_d5(v, c + level*MLKEM_POLYCOMPRESSEDBYTES_D11);
+		break;
+	}
 }
 
 /* Reference: `gen_matrix()` in the reference implementation @[REF].
