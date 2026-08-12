@@ -431,8 +431,6 @@ mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 
 	memset(&state, 0, sizeof state);
 
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(buf, 0, sizeof(buf));
 }
 
@@ -1150,8 +1148,6 @@ mlk_poly_getnoise_eta1_4x(int level, mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, m
 		abort();
 
 
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(buf, 0, sizeof(buf));
 	memset(extkey, 0, sizeof(extkey));
 }
@@ -1170,8 +1166,6 @@ mlk_poly_getnoise_eta2(mlk_poly *r, const u8int seed[MLKEM_SYMBYTES], u8int nonc
 
 	mlk_poly_cbd2(r, buf);
 
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(buf, 0, sizeof(buf));
 	memset(extkey, 0, sizeof(extkey));
 }
@@ -1212,8 +1206,6 @@ mlk_poly_getnoise_eta1122_4x(mlk_poly *r0, mlk_poly *r1, mlk_poly *r2, mlk_poly 
 	mlk_poly_cbd2(r3, buf[3]);
 
 
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(buf, 0, sizeof(buf));
 	memset(extkey, 0, sizeof(extkey));
 }
@@ -1314,8 +1306,6 @@ mlk_gen_matrix(int level, mlk_polymat *a, const u8int seed[MLKEM_SYMBYTES], int 
 		mlk_poly_rej_uniform(&a->vec[i / level].vec[i % level], seed_ext[0]);
 	}
 
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(seed_ext, 0, sizeof(seed_ext));
 }
 
@@ -1447,8 +1437,6 @@ mlk_indcpa_keypair_derand(int level, u8int *pk, u8int *sk, const u8int coins[MLK
 	memcpy(pk + _MLKEM_POLYVECBYTES(level), publicseed, MLKEM_SYMBYTES);
 
 cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	MLK_FREE(skpv_cache, mlk_polyvec_mulcache, 1);
 	MLK_FREE(skpv, mlk_polyvec, 1);
 	MLK_FREE(pkpv, mlk_polyvec, 1);
@@ -1514,8 +1502,6 @@ mlk_indcpa_enc(int level, u8int *c, const u8int *m, const u8int *pk, const u8int
 	mlk_pack_ciphertext(level, c, b, v);
 
 cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	MLK_FREE(sp_cache, mlk_polyvec_mulcache, 1);
 	MLK_FREE(epp, mlk_poly, 1);
 	MLK_FREE(k, mlk_poly, 1);
@@ -1561,8 +1547,6 @@ mlk_indcpa_dec(int level, u8int *m, const u8int *c, const u8int *sk)
 	mlk_poly_tomsg(m, v);
 
 cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	MLK_FREE(b_cache, mlk_polyvec_mulcache, 1);
 	MLK_FREE(sb, mlk_poly, 1);
 	MLK_FREE(v, mlk_poly, 1);
@@ -1648,8 +1632,6 @@ mlk_kem_enc_x(int level, u8int *ct, u8int *ss, const u8int *pk, u8int *coins)
 	memcpy(ss, kr, MLKEM_SYMBYTES);
 
 cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(kr, 0, sizeof buf);
 	memset(buf, 0, sizeof buf);
 	return ret;
@@ -1710,12 +1692,10 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 		abort();
 	}
 
-	/* constant time memcpy using fail as the conditional */
+	/* constant time conditional memcpy using fail as the conditional */
 	mlk_ct_cmov_zero(ss, kr, MLKEM_SYMBYTES, fail);
 
 cleanup:
-	/* Specification: Partially implements
-	 * @[FIPS203, Section 3.3, Destruction of intermediate values] */
 	memset(tmp, 0, sizeof tmp);
 	memset(kr, 0, sizeof kr);
 	memset(buf, 0, sizeof buf);
