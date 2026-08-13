@@ -11,7 +11,7 @@
  */
 
 int
-mlk_ct_sel_int(uint a, uint b, uint cond)
+ctsell(ulong a, ulong b, ulong cond)
 {
 	cond = (cond | -cond) >> 31;
 	cond = -cond;
@@ -19,7 +19,7 @@ mlk_ct_sel_int(uint a, uint b, uint cond)
 }
 
 void
-mlk_ct_cmov_zero(uchar *dst, uchar *src, ulong len, uint b)
+ctmemsel(uchar *dst, uchar *src, ulong len, ulong b)
 {
 	b = (b | -b) >> 31;
 	b = -b;
