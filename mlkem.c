@@ -42,9 +42,6 @@ enum{
     USED((v));					\
   } while(0)
 
-int ctsell(ulong a, ulong b, ulong cond);
-void ctmemsel(uchar *r, uchar *x, ulong len, ulong b);
-
 /* Macros denoting FIPS 203 specific Hash functions */
 
 /* Hash function H, @[FIPS203, Section 4.1, Eq (4.4)] */
@@ -196,7 +193,7 @@ mlk_scalar_signed_to_unsigned_q(short c)
 	 *
 	 * Note that c + MLKEM_Q does not overflow in s16int,
 	 * so the cast to u16int is safe. */
-	c = ctsell(c + MLKEM_Q, c, (u16int)(((long)c)>>16));
+	c = tslsel(c + MLKEM_Q, c, (u16int)(((long)c)>>16));
 
 	return c;
 }
@@ -430,7 +427,6 @@ mlk_poly_rej_uniform(mlk_poly *entry, u8int seed[MLKEM_SYMBYTES + 2])
 	}
 
 	memset(&state, 0, sizeof state);
-
 	memset(buf, 0, sizeof(buf));
 }
 
@@ -948,7 +944,7 @@ mlk_poly_frommsg(mlk_poly *r, const u8int msg[MLKEM_INDCPA_MSGBYTES])
 			 * as per @[FIPS203, Eq (4.8)]. */
 			/* Assumes the compiler does not change this to a bit selection */
 			u8int mask = 1u << j;
-			r->coeffs[8 * i + j] = ctsell(MLKEM_Q_HALF, 0, msg[i] & mask);
+			r->coeffs[8 * i + j] = tslsel(MLKEM_Q_HALF, 0, msg[i] & mask);
 		}
 	}
 }
@@ -1693,7 +1689,7 @@ mlk_kem_dec_x(int level, u8int *ss, const u8int *ct, const u8int *sk)
 	}
 
 	/* constant time conditional memcpy using fail as the conditional */
-	ctmemsel(ss, kr, MLKEM_SYMBYTES, fail);
+	tsmemsel(ss, kr, MLKEM_SYMBYTES, fail);
 
 cleanup:
 	memset(tmp, 0, sizeof tmp);
