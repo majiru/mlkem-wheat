@@ -5,7 +5,6 @@ CFLAGS=-FTVw
 
 PORT=\
 	mlkem.$O\
-	verify.$O\
 
 TARG=\
 	main\
